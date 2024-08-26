@@ -66,6 +66,12 @@ MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
 ]
 
+
+PASSWORD_HASHERS = [
+    'apps.auth.utils.CustomSHA512PasswordHasher',
+    'django.contrib.auth.hashers.PBKDF2PasswordHasher',  # Fallback to Django's default hasher
+   
+]
 REST_FRAMEWORK  ={
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 
