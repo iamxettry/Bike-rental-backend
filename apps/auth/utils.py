@@ -1,7 +1,11 @@
 from django.contrib.auth.hashers import BasePasswordHasher
+from rest_framework import exceptions
+from django.utils.translation import gettext as _
+
 from django.utils.crypto import get_random_string
 import hashlib
 import random
+import re
 
 class CustomSHA512PasswordHasher(BasePasswordHasher):
     """
@@ -50,3 +54,25 @@ def generate_userName(first_name, last_name):
     digit = get_random_string(length,allowed_chars="0123456789")
     username=first_name+last_name+digit
     return username
+
+
+class CustomPasswordValidator:
+    def __call__(self, password):
+
+        if len(password) < 8 or len(password) > 24:
+            raise exceptions.APIException(_("Password must be between 8 and 24 characters long."))
+        if not re.search(r'[a-z]', password):
+            raise exceptions.APIException(_("Password must contain at least one lowercase letter."))
+        if not re.search(r'[A-Z]', password):
+            raise exceptions.APIException(_("Password must contain at least one uppercase letter."))
+        if not re.search(r'[0-9]', password):
+            raise exceptions.APIException(_("Password must contain at least one number."))
+        if not re.search(r'[!@#$%]', password):
+            raise exceptions.APIException(_("Password must contain at least one special character (!@#$%)."))
+
+
+    def get_help_text(self):
+        return _(
+            "Your password must be between 8 and 24 characters long, contain at least one lowercase letter, "
+            "one uppercase letter, one number, and one special character (!@#$%)."
+        )
