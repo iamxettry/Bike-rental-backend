@@ -56,7 +56,7 @@ def generate_userName(first_name, last_name):
 
 
 class CustomPasswordValidator:
-    def __call__(self, password):
+    def validate(self, password, user=None):
 
         if len(password) < 8 or len(password) > 24:
             raise exceptions.APIException(_("Password must be between 8 and 24 characters long."))
