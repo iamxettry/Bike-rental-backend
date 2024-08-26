@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser,BaseUserManager, PermissionsMixin
 from django.utils import timezone
+from .utils import CustomPasswordValidator
 import uuid
 class UserManager(BaseUserManager):
     def create_user(self,username,email,password=None,**extra_fields):
@@ -38,7 +39,10 @@ class User(AbstractBaseUser,PermissionsMixin):
     email = models.EmailField(unique=True)
     username = models.CharField(max_length=30,unique=True, blank=True, null=True)
     profile_picture=models.ImageField(blank=True,null=True , upload_to='profile/', height_field=None, width_field=None, max_length=None)
-
+    password = models.CharField(
+        max_length=128,
+        validators=[CustomPasswordValidator()],
+    )
     otp = models.CharField(max_length=6, blank=True, null=True)
     otp_created_at = models.DateTimeField(blank=True, null=True)
     otp_tries = models.PositiveIntegerField(default=0)
@@ -47,7 +51,13 @@ class User(AbstractBaseUser,PermissionsMixin):
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
-        
+    
+
+    def clean(self):
+        validator = CustomPasswordValidator()
+        validator(self.password)
+        super().clean()
+
     groups = models.ManyToManyField(
         'auth.Group',
         related_name='custom_user_set',  
