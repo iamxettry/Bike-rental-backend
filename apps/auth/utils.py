@@ -14,27 +14,26 @@ class CustomSHA512PasswordHasher(BasePasswordHasher):
     algorithm = "custom_sha512"
 
     def salt(self):
-        print(get_random_string(16));
         return get_random_string(16)
 
     def encode(self, password, salt):
         assert password is not None
-        assert salt is not None
+        assert salt and '$' not in salt
         hash = hashlib.sha512((salt + password).encode('utf-8')).hexdigest()
-        return f"{self.algorithm}${salt}${hash}"
+        truncated_hash = hash[:128]
+        encoded = "%s$%s$%s" % (self.algorithm, salt, truncated_hash)
+        return encoded
 
     def verify(self, password, encoded):
         algorithm, salt, hash = encoded.split('$', 2)
-        assert algorithm == self.algorithm
-        return self.encode(password, salt) == encoded
+        encoded_2 = self.encode(password, salt)
+        return encoded == encoded_2
 
-    def safe_summary(self, encoded):
+
+    def verify(self, password, encoded):
         algorithm, salt, hash = encoded.split('$', 2)
-        return {
-            'algorithm': algorithm,
-            'salt': salt,
-            'hash': hash[:6] + '...' + hash[-6:],
-        }
+        encoded_2 = self.encode(password, salt)
+        return encoded == encoded_2
 
     def must_update(self, encoded):
         return False

@@ -1,7 +1,7 @@
 from rest_framework import serializers, exceptions
 from .models import User
-from rest_framework.validators import ValidationError
 from .utils import generate_userName, CustomPasswordValidator
+from django.contrib.auth.hashers import make_password
 # user register serialzers 
 class RegisterSerializers(serializers.ModelSerializer):
     first_name=serializers.CharField(error_messages={'required':'Fist Name is required', 'blank':'First name cannot not be blank.'})
@@ -27,13 +27,17 @@ class RegisterSerializers(serializers.ModelSerializer):
         return super().validate(attrs)
     
     def create(self, validated_data):
+        password = validated_data.pop('password', None)
         user : User = User.objects.create_user(
                 first_name=validated_data['first_name'],
                 last_name=validated_data['last_name'],
                 username=generate_userName(validated_data['first_name'],validated_data['last_name']),
                 email=validated_data['email'],
-                password=validated_data['password'],
+                password=password,
             )
+        if password:
+            user.password = make_password(password)  # Hash the password
+            user.save()
         return user
 
 

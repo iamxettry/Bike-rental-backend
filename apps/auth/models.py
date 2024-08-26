@@ -38,6 +38,7 @@ class User(AbstractBaseUser,PermissionsMixin):
     last_name=models.CharField(max_length=30)
     email = models.EmailField(unique=True)
     username = models.CharField(max_length=30,unique=True, blank=True, null=True)
+    password = models.CharField(max_length=255)
     profile_picture=models.ImageField(blank=True,null=True , upload_to='profile/', height_field=None, width_field=None, max_length=None)
  
     otp = models.CharField(max_length=6, blank=True, null=True)
