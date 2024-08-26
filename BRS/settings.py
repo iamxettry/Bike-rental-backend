@@ -72,6 +72,12 @@ PASSWORD_HASHERS = [
     'django.contrib.auth.hashers.PBKDF2PasswordHasher',  # Fallback to Django's default hasher
    
 ]
+
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        'NAME': 'apps.auth.utils.CustomPasswordValidator',
+    },
+]
 REST_FRAMEWORK  ={
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 
