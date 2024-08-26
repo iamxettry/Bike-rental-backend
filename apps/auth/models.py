@@ -33,7 +33,7 @@ class UserManager(BaseUserManager):
 
 class User(AbstractBaseUser,PermissionsMixin):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    first_name=models.CharField(max_length=30)
+    first_name=models.CharField(max_length=30,error_messages={'required':'Fist Name is required', 'blank':'First name cannot not be blank'})
     last_name=models.CharField(max_length=30)
     email = models.EmailField(unique=True)
     username = models.CharField(max_length=30,unique=True)
@@ -48,6 +48,22 @@ class User(AbstractBaseUser,PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
         
+    groups = models.ManyToManyField(
+        'auth.Group',
+        related_name='custom_user_set',  
+        blank=True,
+        help_text=('The groups this user belongs to. A user will get all permissions '
+                   'granted to each of their groups.'),
+        related_query_name='user',
+    )
+
+    user_permissions = models.ManyToManyField(
+        'auth.Permission',
+        related_name='custom_user_permissions', 
+        blank=True,
+        help_text='Specific permissions for this user.',
+        related_query_name='user',
+    )
     objects=UserManager()
 
     USERNAME_FIELD = "email"
