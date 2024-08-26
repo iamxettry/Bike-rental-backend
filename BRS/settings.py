@@ -51,7 +51,7 @@ INSTALLED_APPS = [
 
     # locals apps
     'apps.auth',
-    # 'apps.auth.apps.AuthConfig',
+    'apps.common',
 ]
 
 MIDDLEWARE = [
