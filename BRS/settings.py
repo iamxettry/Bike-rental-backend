@@ -50,7 +50,8 @@ INSTALLED_APPS = [
     'drf_spectacular',
 
     # locals apps
-    # 'apps.auth',
+    'apps.auth',
+    # 'apps.auth.apps.AuthConfig',
 ]
 
 MIDDLEWARE = [
@@ -61,6 +62,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+    "corsheaders.middleware.CorsMiddleware",
 ]
 
 REST_FRAMEWORK  ={
@@ -73,7 +76,7 @@ REST_FRAMEWORK  ={
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
     "PAGE_SIZE": 10,
      "DEFAULT_FILTER_BACKENDS": ("django_filters.rest_framework.DjangoFilterBackend",),
-    "EXCEPTION_HANDLER": "drf_standardized_errors.handler.exception_handler",
+    # "EXCEPTION_HANDLER": "drf_standardized_errors.handler.exception_handler",
     'DEFAULT_RENDERER_CLASSES': (
         'rest_framework.renderers.JSONRenderer',
     ),
@@ -220,4 +223,4 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Custom User model
-# AUTH_USER_MODEL = 'auth.User'
+# AUTH_USER_MODEL = 'apps.auth.User'
