@@ -107,7 +107,7 @@ class UserLogOutView(APIView):
             
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
     
-    
+
 # userChange Password View 
 class UserChangePasswordView(APIView):
     permission_classes=[permissions.IsAuthenticated]
@@ -121,3 +121,20 @@ class UserChangePasswordView(APIView):
             return Response({"success":"Password Changed successfully."},status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+
+# ForgotPassword Views
+class ForgotPasswordView(APIView):
+    
+    def post(self, request):
+        serializer=ForgotPasswordSerializer(data=request.data)
+
+        if serializer.is_valid():
+            user= serializer.validated_data.get('user', None)
+            otp_handler = OTPhandlers(request,user,OTPAction.RESET)
+            success,message,otp_created_at = otp_handler.send_otp()
+            if not success:
+                return Response({'error': message}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"success":"Reset OTP has been sent to your email address."},status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+

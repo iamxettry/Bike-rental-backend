@@ -186,3 +186,19 @@ class UserChangePasswordSerializer(serializers.Serializer):
         validator.validate(new_password)
         return super().validate(attrs)
 
+# ForgotPassword Serializer 
+class ForgotPasswordSerializer(serializers.Serializer):
+    email = serializers.EmailField(max_length=255,required=True,allow_blank=False,error_messages={
+        'required':'Email is required.',
+        'blank':'Email cannot be blank.',
+    })
+
+    def validate(self, attrs):
+        email=attrs.get('email')
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            attrs['user']=None
+            raise exceptions.APIException("User doesnot exits.")
+        attrs['user']=user
+        return super().validate(attrs)
