@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status,permissions
-from rest_framework_simplejwt.tokens import TokenError, RefreshToken
+from rest_framework.permissions import IsAdminUser,IsAuthenticated
 from .serializers import *
 from .models import User
 from apps.common.otp import OTPAction, OTPhandlers
@@ -89,7 +89,7 @@ class ResendOtpView(APIView):
 
 # User Logout View
 class UserLogOutView(APIView):
-    permission_classes=[permissions.IsAuthenticated]
+    permission_classes=[IsAuthenticated]
     def post(self, request):
         refresh_token = request.COOKIES.get('refresh_token')
         if not refresh_token:
@@ -110,7 +110,7 @@ class UserLogOutView(APIView):
 
 # userChange Password View 
 class UserChangePasswordView(APIView):
-    permission_classes=[permissions.IsAuthenticated]
+    permission_classes=[IsAuthenticated]
     def post(self, request):
         serializer=UserChangePasswordSerializer(data=request.data, context={'request':request})
         if serializer.is_valid():
@@ -158,4 +158,29 @@ class ChangeForgotPasswordView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
 
-        
+# user Details View
+class UserDetailView(APIView):
+    permissions_classes=[IsAuthenticated]
+    def get(self, request):
+        user=self.request.user
+        serializer=UserSerializer(user,context={'request':request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def put(self, request):
+        user = self.request.user
+        serializer = UserSerializer(user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def patch(self, request):
+        user = self.request.user
+        serializer = UserSerializer(user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
