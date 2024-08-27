@@ -3,6 +3,7 @@ from .models import User
 from .utils import generate_userName, CustomPasswordValidator
 from django.contrib.auth.hashers import make_password
 from apps.common.otp import OTPhandlers, OTPAction
+from rest_framework_simplejwt.tokens import RefreshToken
 # user register serialzers 
 class RegisterSerializers(serializers.ModelSerializer):
     first_name=serializers.CharField(error_messages={'required':'Fist Name is required', 'blank':'First name cannot not be blank.'})
@@ -136,3 +137,18 @@ class ResendOTPSerializer(serializers.ModelSerializer):
             raise exceptions.APIException("User Not found.")
         attrs['user']=user
         return super().validate(attrs)
+    
+#User logout Serializer
+class UserLogOutSerializer(serializers.Serializer):
+    refresh=serializers.CharField()
+ 
+    def validate(self, attrs):
+        refresh_token = attrs.get('refresh')
+
+        try:
+            token = RefreshToken(refresh_token)
+            token.blacklist() 
+        except Exception as e:
+            raise exceptions.APIException(f"Invalid refresh token: {str(e)}")
+
+        return attrs

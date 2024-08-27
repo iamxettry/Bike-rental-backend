@@ -1,6 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status,permissions
+from rest_framework_simplejwt.tokens import TokenError, RefreshToken
 from .serializers import *
 from .models import User
 from apps.common.otp import OTPAction, OTPhandlers
@@ -31,7 +32,8 @@ class LoginUserView(APIView):
                 user.save()
                 tokens=get_tokens_for_user(user)
                 response=Response({'success':'logged in successfully.'}, status=status.HTTP_200_OK)
-                response.set_cookie(key="Auth_token", value=tokens['access'],max_age=3600, httponly=True,secure=False, samesite='lax')
+                response.set_cookie(key="access_token", value=tokens['access'],max_age=3600, httponly=True,secure=False, samesite='lax')
+                response.set_cookie(key="refresh_token", value=tokens['refresh'], max_age=3600, httponly=True, secure=False, samesite='Lax')
                 return  response
             else:
                 otp_handler= OTPhandlers(request, user, OTPAction.LOGIN)
@@ -60,8 +62,8 @@ class VefifyLoginOTPView(APIView):
                 user.last_login = timezone.now()
                 user.save()
                 response=Response({'success':'OTP verified successfully.'}, status=status.HTTP_200_OK)
-                response.set_cookie(key="Auth_token", value=tokens['access'],max_age=3600, httponly=True,secure=False, samesite='lax')
-
+                response.set_cookie(key="access_token", value=tokens['access'],max_age=3600, httponly=True,secure=False, samesite='lax')
+                response.set_cookie(key="refresh_token", value=tokens['refresh'], max_age=3600, httponly=True, secure=False, samesite='Lax')
                 return response
             return Response({'error':'OTP verification failed.'},status=status.HTTP_400_BAD_REQUEST) 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -83,4 +85,24 @@ class ResendOtpView(APIView):
                 'otp_created_at': otp_created_at.isoformat()
                 
                     },status=status.HTTP_200_OK)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+
+# User Logout View
+class UserLogOutView(APIView):
+    # permission_classes=[permissions.IsAuthenticated]
+    def post(self, request):
+        refresh_token = request.COOKIES.get('refresh_token')
+        if not refresh_token:
+            return Response({"error": "Refresh token not found"}, status=status.HTTP_400_BAD_REQUEST)
+        serializer= UserLogOutSerializer(data={'refresh': refresh_token})
+        if serializer.is_valid():
+            try:
+                response = Response({'success': 'Logged out successfully.'}, status=status.HTTP_200_OK)
+                response.delete_cookie('access_token')
+                response.delete_cookie('refresh_token')
+                
+                return response
+            except Exception as e:
+                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
