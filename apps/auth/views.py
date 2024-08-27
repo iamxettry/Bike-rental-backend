@@ -44,4 +44,25 @@ class LoginUserView(APIView):
                     
                      },status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
+
+
+# loginOTP Verification View 
+class VefifyLoginOTPView(APIView):
+    def post(self,request):
+        serializer=VerifyLoginOTPSerializer(data=request.data, context={'request':request})
+        if serializer.is_valid():
+            user = serializer.validated_data.get('user',None)
+            message = serializer.validated_data.get('message',None)
+            print(message)
+            if user is not None:
+                tokens = get_tokens_for_user(user)
+
+                user.is_active = True
+                user.last_login = timezone.now()
+                user.save()
+                response=Response({'success':'OTP verified successfully.'}, status=status.HTTP_200_OK)
+                response.set_cookie(key="Auth_token", value=tokens['access'],max_age=3600, httponly=True,secure=False, samesite='lax')
+
+                return response
+            return Response({'error':'OTP verification failed.'},status=status.HTTP_400_BAD_REQUEST) 
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

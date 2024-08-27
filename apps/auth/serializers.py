@@ -2,6 +2,7 @@ from rest_framework import serializers, exceptions
 from .models import User
 from .utils import generate_userName, CustomPasswordValidator
 from django.contrib.auth.hashers import make_password
+from apps.common.otp import OTPhandlers, OTPAction
 # user register serialzers 
 class RegisterSerializers(serializers.ModelSerializer):
     first_name=serializers.CharField(error_messages={'required':'Fist Name is required', 'blank':'First name cannot not be blank.'})
@@ -74,3 +75,42 @@ class LoginUserSerializers(serializers.ModelSerializer):
                 raise exceptions.APIException("User doesnot exists")
         else:
             raise exceptions.APIException("Invalid Credentials!")
+        
+# VerifyOtp serializers 
+class VerifyLoginOTPSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(max_length=255,required=True,allow_blank=False,error_messages={
+        'required':'Email is required.',
+        'blank':'Email cannot be blank.',
+    })
+    otp = serializers.CharField(max_length=255,required=True,allow_blank=False,error_messages={
+        'required':'Otp is required.',
+        'blank':'Otp cannot be blank.'
+    })
+    class Meta:
+        model=User
+        fields=['otp','email']
+
+    def validate(self, attrs):
+        email=attrs.get('email', None)
+        otp=attrs.get('otp',None)
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            attrs['user'] = None
+            raise exceptions.APIException("User does not exist")
+        
+        otp_handlers = OTPhandlers(
+            request=self.context['request'],
+            user=user,
+            action=OTPAction.LOGIN,
+        )
+
+        verified,message = otp_handlers.verify_otp(otp)
+
+        if not verified:
+            raise exceptions.APIException(message)
+        
+        attrs['user'] = user
+        attrs['message'] = message
+        return super().validate(attrs)
