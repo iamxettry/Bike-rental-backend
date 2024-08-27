@@ -138,3 +138,15 @@ class ForgotPasswordView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
+# Verify Forgot password View
+class VefiryForgotPasswordView(APIView):
+    def post(self, request):
+        serializer = ForgotPasswordVerifySerializer(data=request.data, context={'request':request})
+
+        if serializer.is_valid():
+            message = serializer.validated_data.get('message',None)
+            return Response({"success":{message}}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        
+

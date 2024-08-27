@@ -31,7 +31,7 @@ class OTPhandlers:
         return otp,self.user.otp_created_at
     
     def verify_otp(self,otp):
-        if self.user.email_verified==True:
+        if self.action == OTPAction.LOGIN and self.user.email_verified:
             return False, "Email is already verified."
         
         if self.user.otp_tries >= 3:
@@ -55,7 +55,8 @@ class OTPhandlers:
         self.user.otp = None
         self.user.otp_tries = 0
         self.user.otp_created_at = None
-        self.user.email_verified = True
+        if self.action == OTPAction.LOGIN:
+            self.user.email_verified = True
         self.user.save()
         return True, "OTP Verified"
         

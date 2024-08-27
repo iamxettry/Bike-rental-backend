@@ -202,3 +202,40 @@ class ForgotPasswordSerializer(serializers.Serializer):
             raise exceptions.APIException("User doesnot exits.")
         attrs['user']=user
         return super().validate(attrs)
+    
+
+# Forgot passwrd vefify password Serializer
+class ForgotPasswordVerifySerializer(serializers.Serializer):
+    email = serializers.EmailField(max_length=255,required=True,allow_blank=False,error_messages={
+        'required':'Email is required.',
+        'blank':'Email cannot be blank.',
+    })
+    otp = serializers.CharField(max_length=255,required=True,allow_blank=False,error_messages={
+        'required':'Otp is required.',
+        'blank':'Otp cannot be blank.'
+    })
+
+    def validate(self, attrs):
+        email=attrs.get('email', None)
+        otp=attrs.get('otp',None)
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            attrs['user'] = None
+            raise exceptions.APIException("User does not exist")
+        
+        otp_handlers = OTPhandlers(
+            request=self.context['request'],
+            user=user,
+            action=OTPAction.RESET,
+        )
+
+        verified,message = otp_handlers.verify_otp(otp)
+
+        if not verified:
+            raise exceptions.APIException(message)
+        
+        attrs['user'] = user
+        attrs['message'] = message
+        return super().validate(attrs)
