@@ -89,7 +89,7 @@ class ResendOtpView(APIView):
 
 # User Logout View
 class UserLogOutView(APIView):
-    # permission_classes=[permissions.IsAuthenticated]
+    permission_classes=[permissions.IsAuthenticated]
     def post(self, request):
         refresh_token = request.COOKIES.get('refresh_token')
         if not refresh_token:
