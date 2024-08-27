@@ -19,7 +19,7 @@ class RegisterSerializers(serializers.ModelSerializer):
 
     def validate_password(self, value):
         validator = CustomPasswordValidator()
-        validator(value)
+        validator.validate(value)
         return value
     def validate(self, attrs):
         password = attrs.get('password')
@@ -152,3 +152,37 @@ class UserLogOutSerializer(serializers.Serializer):
             raise exceptions.APIException(f"Invalid refresh token: {str(e)}")
 
         return attrs
+    
+# user Change password 
+class UserChangePasswordSerializer(serializers.Serializer):
+    old_password = serializers.CharField(style={'input_type':'password'}, required=True, allow_blank=False,error_messages={
+        'required':'Old_password is required.',
+        'blank':'Old_password cannot be blank.',
+    })
+    new_password = serializers.CharField(style={'input_type':'password'}, required=True, allow_blank=False,error_messages={
+        'required':'New_password is required.',
+        'blank':'New_password cannot be blank.',
+    })
+    confirm_password = serializers.CharField(style={'input_type':'password'}, required=True, allow_blank=False,error_messages={
+        'required':'Confirm_password is required.',
+        'blank':'Confirm_password cannot be blank.',
+    })
+
+    def validate(self, attrs):
+        user = self.context['request'].user
+        old_password = attrs.get('old_password')
+        new_password=attrs.get('new_password')
+        confirm_password=attrs.get("confirm_password")
+        if not user:
+            raise exceptions.APIException("User not found.")
+        
+        if not user.check_password(old_password):
+            raise exceptions.APIException("Invalid Old password!")
+
+        if new_password!=confirm_password:
+            raise exceptions.APIException("New password and Confirm password didnot match.")
+        
+        validator = CustomPasswordValidator()
+        validator.validate(new_password)
+        return super().validate(attrs)
+

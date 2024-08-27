@@ -106,3 +106,18 @@ class UserLogOutView(APIView):
                 return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
             
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+    
+    
+# userChange Password View 
+class UserChangePasswordView(APIView):
+    permission_classes=[permissions.IsAuthenticated]
+    def post(self, request):
+        serializer=UserChangePasswordSerializer(data=request.data, context={'request':request})
+        if serializer.is_valid():
+            user = request.user
+            new_password = serializer.validated_data['new_password']
+            user.set_password(new_password)
+            user.save()
+            return Response({"success":"Password Changed successfully."},status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
