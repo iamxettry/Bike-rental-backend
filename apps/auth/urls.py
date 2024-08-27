@@ -11,4 +11,6 @@ urlpatterns = [
     path('forgot-password/verify-otp/', VefiryForgotPasswordView.as_view(), name="forgot-password-otp-verify" ),
     path('forgot-password/change-password/', ChangeForgotPasswordView.as_view(), name="forgot-password-change" ),
     path('user/details/', UserDetailView.as_view(), name="user-details" ),
+    path('users/list/', UserList.as_view(), name="users-list" ),
+    path('user/retrieve/<uuid:pk>/', UserRetrieve.as_view(), name="user-retrieve" ),
 ]

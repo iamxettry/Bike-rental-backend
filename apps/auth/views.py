@@ -184,3 +184,19 @@ class UserDetailView(APIView):
 
 
 
+# user list
+class UserList(APIView):
+    permission_classes=[IsAuthenticated,IsAdminUser]
+
+    def get(self, request):
+        user= User.objects.all()
+        serializer=UserSerializer(user, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+# user retrieve view
+class UserRetrieve(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request, pk):
+        user = User.objects.get(id=pk)
+        serializer = UserSerializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
