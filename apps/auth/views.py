@@ -149,4 +149,13 @@ class VefiryForgotPasswordView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
         
+# ChangeForgot passwordView
+class ChangeForgotPasswordView(APIView):
+    def post(self, request):
+        serializer=ChangeForgotPasswordSerializer(data=request.data)
+        if serializer.is_valid():
+            return Response({"success":"Password Changed Successfully."}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
 
+        

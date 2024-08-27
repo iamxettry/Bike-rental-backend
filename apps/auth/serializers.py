@@ -239,3 +239,39 @@ class ForgotPasswordVerifySerializer(serializers.Serializer):
         attrs['user'] = user
         attrs['message'] = message
         return super().validate(attrs)
+
+
+# ChangeForgot password Serializers
+class ChangeForgotPasswordSerializer(serializers.Serializer):
+    email = serializers.EmailField(style={'input_type':'password'}, required=True, allow_blank=False,error_messages={
+        'required':'Email is required.',
+        'blank':'Email cannot be blank.',
+    })
+    new_password = serializers.CharField(style={'input_type':'password'}, required=True, allow_blank=False,error_messages={
+        'required':'New_password is required.',
+        'blank':'New_password cannot be blank.',
+    })
+    confirm_password = serializers.CharField(style={'input_type':'password'}, required=True, allow_blank=False,error_messages={
+        'required':'Confirm_password is required.',
+        'blank':'Confirm_password cannot be blank.',
+    })
+
+    def validate(self, attrs):
+        email= attrs.get("email")
+        new_password=attrs.get("new_password")
+        confirm_password=attrs.get("confirm_password")
+        if new_password!=confirm_password:
+            raise exceptions.APIException("New password and Confirm password didnot match.")
+        try:
+            user = User.objects.get(email=email)
+            attrs['user']=user
+        except User.DoesNotExist:
+            attrs['user']=None
+            raise exceptions.APIException("User Does not exits.")
+        validator = CustomPasswordValidator()
+        validator.validate(new_password)
+        user.set_password(new_password)
+        user.save()
+        return super().validate(attrs)
+
+

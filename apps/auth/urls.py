@@ -9,4 +9,5 @@ urlpatterns = [
     path('change-password/', UserChangePasswordView.as_view(), name="change-password" ),
     path('forgot-password/', ForgotPasswordView.as_view(), name="forgot-password" ),
     path('forgot-password/verify-otp/', VefiryForgotPasswordView.as_view(), name="forgot-password-otp-verify" ),
+    path('forgot-password/change-password/', ChangeForgotPasswordView.as_view(), name="forgot-password-change" ),
 ]
