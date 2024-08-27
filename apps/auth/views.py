@@ -30,8 +30,9 @@ class LoginUserView(APIView):
                 user.last_login=timezone.now()
                 user.save()
                 tokens=get_tokens_for_user(user)
-                return Response({ 'refresh': tokens['refresh'],
-                    'access': tokens['access'],'success':'User logged in successful'}, status=status.HTTP_200_OK)
+                response=Response({'success':'logged in successfully.'}, status=status.HTTP_200_OK)
+                response.set_cookie(key="Auth_token", value=tokens['access'],max_age=3600, httponly=True,secure=False, samesite='lax')
+                return  response
             else:
                 otp_handler= OTPhandlers(request, user, OTPAction.LOGIN)
                 success, message,otp_created_at = otp_handler.send_otp()
