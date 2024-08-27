@@ -53,7 +53,6 @@ class VefifyLoginOTPView(APIView):
         if serializer.is_valid():
             user = serializer.validated_data.get('user',None)
             message = serializer.validated_data.get('message',None)
-            print(message)
             if user is not None:
                 tokens = get_tokens_for_user(user)
 
@@ -66,3 +65,22 @@ class VefifyLoginOTPView(APIView):
                 return response
             return Response({'error':'OTP verification failed.'},status=status.HTTP_400_BAD_REQUEST) 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# Resend OTP View 
+class ResendOtpView(APIView):
+    def post(self, request):
+        serializer= ResendOTPSerializer(data=request.data)
+        if serializer.is_valid():
+            user=serializer.validated_data.get('user',None)
+            if user is None:
+                raise exceptions.AuthenticationFailed("User doesnot exist!.")
+            otp_handler= OTPhandlers(request, user, OTPAction.LOGIN)
+            success, message,otp_created_at = otp_handler.send_otp()
+            if not success:
+                return Response({'error': message}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({
+                'success':' OTP has been sent to your email address',
+                'otp_created_at': otp_created_at.isoformat()
+                
+                    },status=status.HTTP_200_OK)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)

@@ -114,3 +114,25 @@ class VerifyLoginOTPSerializer(serializers.ModelSerializer):
         attrs['user'] = user
         attrs['message'] = message
         return super().validate(attrs)
+    
+# Resend Otp Serializers
+class ResendOTPSerializer(serializers.ModelSerializer):
+    email= serializers.EmailField(max_length=255,required=True,allow_blank=False,error_messages={
+        'required':'Email is required.',
+        'blank':'Email cannot be blank.',
+    })
+    class Meta:
+        model=User
+        fields=['email']
+
+    def validate(self, attrs):
+        email= attrs.get('email')
+        if not email:
+            raise exceptions.APIException("E-mail not found.")
+        
+        try:
+            user=User.objects.get(email=email)
+        except User.DoesNotExist:
+            raise exceptions.APIException("User Not found.")
+        attrs['user']=user
+        return super().validate(attrs)
