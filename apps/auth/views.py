@@ -1,4 +1,5 @@
 from rest_framework.views import APIView
+from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import status,permissions
 from rest_framework.permissions import IsAdminUser,IsAuthenticated
@@ -8,19 +9,20 @@ from apps.common.otp import OTPAction, OTPhandlers
 from apps.common.utils import get_tokens_for_user
 from django.utils import timezone
 # Register User view 
-class RegisterUserView(APIView):
-    
+class RegisterUserView(generics.CreateAPIView):
+    serializer_class = RegisterSerializers
     def post(self, request):
-        serializer = RegisterSerializers(data=request.data)
+        serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response({"success": "Register Successfully."}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 # Login View 
-class LoginUserView(APIView):
+class LoginUserView(generics.CreateAPIView):
+    serializer_class = LoginUserSerializers
     def post(self, request):
-        serializer = LoginUserSerializers(data=request.data)
+        serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             user = serializer.validated_data['user']
             if user is None:
@@ -49,9 +51,10 @@ class LoginUserView(APIView):
 
 
 # loginOTP Verification View 
-class VefifyLoginOTPView(APIView):
+class VefifyLoginOTPView(generics.CreateAPIView):
+    serializer_class = VerifyLoginOTPSerializer
     def post(self,request):
-        serializer=VerifyLoginOTPSerializer(data=request.data, context={'request':request})
+        serializer=self.get_serializer(data=request.data, context={'request':request})
         if serializer.is_valid():
             user = serializer.validated_data.get('user',None)
             message = serializer.validated_data.get('message',None)
@@ -69,9 +72,10 @@ class VefifyLoginOTPView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 # Resend OTP View 
-class ResendOtpView(APIView):
+class ResendOtpView(generics.CreateAPIView):
+    serializer_class = ResendOTPSerializer
     def post(self, request):
-        serializer= ResendOTPSerializer(data=request.data)
+        serializer=self.get_serializer(data=request.data)
         if serializer.is_valid():
             user=serializer.validated_data.get('user',None)
             if user is None:
@@ -88,13 +92,14 @@ class ResendOtpView(APIView):
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
 # User Logout View
-class UserLogOutView(APIView):
+class UserLogOutView(generics.CreateAPIView):
+    serializer_class = UserLogOutSerializer
     permission_classes=[IsAuthenticated]
     def post(self, request):
         refresh_token = request.COOKIES.get('refresh_token')
         if not refresh_token:
             return Response({"error": "Refresh token not found"}, status=status.HTTP_400_BAD_REQUEST)
-        serializer= UserLogOutSerializer(data={'refresh': refresh_token})
+        serializer=self.get_serializer(data={'refresh': refresh_token})
         if serializer.is_valid():
             try:
                 response = Response({'success': 'Logged out successfully.'}, status=status.HTTP_200_OK)
@@ -109,10 +114,11 @@ class UserLogOutView(APIView):
     
 
 # userChange Password View 
-class UserChangePasswordView(APIView):
+class UserChangePasswordView(generics.CreateAPIView):
+    serializer_class = UserChangePasswordSerializer
     permission_classes=[IsAuthenticated]
     def post(self, request):
-        serializer=UserChangePasswordSerializer(data=request.data, context={'request':request})
+        serializer=self.get_serializer(data=request.data, context={'request':request})
         if serializer.is_valid():
             user = request.user
             new_password = serializer.validated_data['new_password']
@@ -123,10 +129,11 @@ class UserChangePasswordView(APIView):
     
 
 # ForgotPassword Views
-class ForgotPasswordView(APIView):
+class ForgotPasswordView(generics.CreateAPIView):
+    serializer_class = ForgotPasswordSerializer
     
     def post(self, request):
-        serializer=ForgotPasswordSerializer(data=request.data)
+        serializer=self.get_serializer(data=request.data)
 
         if serializer.is_valid():
             user= serializer.validated_data.get('user', None)
@@ -139,7 +146,8 @@ class ForgotPasswordView(APIView):
     
 
 # Verify Forgot password View
-class VefiryForgotPasswordView(APIView):
+class VefiryForgotPasswordView(generics.CreateAPIView):
+    serializer_class = ForgotPasswordVerifySerializer
     def post(self, request):
         serializer = ForgotPasswordVerifySerializer(data=request.data, context={'request':request})
 
@@ -150,53 +158,37 @@ class VefiryForgotPasswordView(APIView):
         
         
 # ChangeForgot passwordView
-class ChangeForgotPasswordView(APIView):
+class ChangeForgotPasswordView(generics.CreateAPIView):
+    serializer_class = ChangeForgotPasswordSerializer
     def post(self, request):
-        serializer=ChangeForgotPasswordSerializer(data=request.data)
+        serializer=self.get_serializer(data=request.data)
         if serializer.is_valid():
             return Response({"success":"Password Changed Successfully."}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
 
 # user Details View
-class UserDetailView(APIView):
+class UserDetailView(generics.RetrieveUpdateAPIView):
+    serializer_class = UserSerializer
     permissions_classes=[IsAuthenticated]
-    def get(self, request):
-        user=self.request.user
-        serializer=UserSerializer(user,context={'request':request})
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    
-    def put(self, request):
-        user = self.request.user
-        serializer = UserSerializer(user, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-    def patch(self, request):
-        user = self.request.user
-        serializer = UserSerializer(user, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def get_object(self):
+        return self.request.user
 
 
 
 # user list
-class UserList(APIView):
+class UserList(generics.ListAPIView):
+    serializer_class = UserSerializer
     permission_classes=[IsAuthenticated,IsAdminUser]
 
-    def get(self, request):
-        user= User.objects.all()
-        serializer=UserSerializer(user, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    def get_queryset(self):
+        return User.objects.all()
 
 # user retrieve view
-class UserRetrieve(APIView):
+class UserRetrieve(generics.RetrieveAPIView):
+    serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
     def get(self, request, pk):
         user = User.objects.get(id=pk)
-        serializer = UserSerializer(user)
+        serializer = self.get_serializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
