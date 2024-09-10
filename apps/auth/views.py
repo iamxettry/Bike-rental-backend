@@ -8,6 +8,10 @@ from .models import User
 from apps.common.otp import OTPAction, OTPhandlers
 from apps.common.utils import get_tokens_for_user
 from django.utils import timezone
+
+import os
+
+is_production = os.getenv('DJANGO_ENV') == 'production'
 # Register User view 
 class RegisterUserView(generics.CreateAPIView):
     serializer_class = RegisterSerializers
@@ -34,8 +38,21 @@ class LoginUserView(generics.CreateAPIView):
                 user.save()
                 tokens=get_tokens_for_user(user)
                 response=Response({'success':'logged in successfully.'}, status=status.HTTP_200_OK)
-                response.set_cookie(key="access_token", value=tokens['access'],max_age=3600, httponly=True,secure=False, samesite='lax')
-                response.set_cookie(key="refresh_token", value=tokens['refresh'], max_age=3600, httponly=True, secure=False, samesite='Lax')
+                response.set_cookie(
+                    key="access_token", 
+                    value=tokens['access'],
+                    max_age=3600, 
+                    httponly=True,
+                    secure=is_production, 
+                    samesite='None'if is_production else 'lax' 
+                    )
+                response.set_cookie(
+                    key="refresh_token",
+                      value=tokens['refresh'], 
+                      max_age=3600, httponly=True, 
+                      secure=is_production, 
+                      samesite='None'if is_production else 'lax' 
+                      )
                 return  response
             else:
                 otp_handler= OTPhandlers(request, user, OTPAction.LOGIN)
