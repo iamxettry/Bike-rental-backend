@@ -111,7 +111,6 @@ class ResendOtpView(generics.CreateAPIView):
 # User Logout View
 class UserLogOutView(generics.CreateAPIView):
     serializer_class = UserLogOutSerializer
-    permission_classes=[IsAuthenticated]
     def post(self, request):
         refresh_token = request.COOKIES.get('refresh_token')
         if not refresh_token:
@@ -119,6 +118,7 @@ class UserLogOutView(generics.CreateAPIView):
         serializer=self.get_serializer(data={'refresh': refresh_token})
         if serializer.is_valid():
             try:
+                serializer.save()
                 response = Response({'success': 'Logged out successfully.'}, status=status.HTTP_200_OK)
                 response.delete_cookie('access_token')
                 response.delete_cookie('refresh_token')

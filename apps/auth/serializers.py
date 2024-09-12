@@ -143,15 +143,16 @@ class UserLogOutSerializer(serializers.Serializer):
     refresh=serializers.CharField()
  
     def validate(self, attrs):
-        refresh_token = attrs.get('refresh')
-
-        try:
-            token = RefreshToken(refresh_token)
-            token.blacklist() 
-        except Exception as e:
-            raise exceptions.APIException(f"Invalid refresh token: {str(e)}")
-
+        self.token = attrs['refresh']
         return attrs
+
+    def save(self, **kwargs):
+        try:
+            # Blacklist the refresh token
+            RefreshToken(self.token).blacklist()
+        except Exception as e:
+            self.fail('bad_token')
+
     
 # user Change password 
 class UserChangePasswordSerializer(serializers.Serializer):
