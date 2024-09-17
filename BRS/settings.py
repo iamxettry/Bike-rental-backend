@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     # locals apps
     'apps.auth',
     'apps.common',
+    'apps.Bike',
 ]
 
 MIDDLEWARE = [
