@@ -17,7 +17,7 @@ class Bike(models.Model):
     start = models.CharField(max_length=100, choices=START_CHOICES)
     price = models.FloatField()
     description = models.TextField()
-    image = models.ImageField(upload_to='images/bikes')
+    image = models.ImageField(upload_to='images/bikes', null=True, blank=True)
     date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
