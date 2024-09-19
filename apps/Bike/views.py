@@ -5,7 +5,7 @@ from .models import Bike
 from rest_framework.response import Response
 from rest_framework import status
 
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView, ListAPIView
 
 # Bike Create API
 class BikeCreateView(CreateAPIView):
@@ -17,3 +17,9 @@ class BikeCreateView(CreateAPIView):
             serializer.save()
             return Response({"success": "Bike Added Successfully."}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# Bike update, Retrive, Destroy API
+class BikeListView(ListAPIView):
+    serializer_class=BikeSerializer
+    def get_queryset(self):
+        return Bike.objects.all()
