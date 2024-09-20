@@ -1,8 +1,14 @@
 
 from rest_framework import serializers, exceptions
-from .models import Bike
+from .models import Bike, Features
 
+
+class FeaturesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Features
+        fields = ['start', 'engine', 'distance']
 class BikeSerializer(serializers.ModelSerializer):
+    features = FeaturesSerializer()
     class Meta:
         model = Bike
         fields = '__all__'
