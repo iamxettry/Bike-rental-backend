@@ -11,3 +11,10 @@ class BikeSerializer(serializers.ModelSerializer):
         if attrs['price'] < 100:
             raise exceptions.APIException("Price should be greater than 100.")
         return super().validate(attrs)
+    
+    def update(self, instance, validated_data):
+
+        if validated_data.get('price') < 100:
+            raise exceptions.APIException("Price should be greater than 100.")
+
+        return super().update(instance, validated_data)

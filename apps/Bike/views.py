@@ -19,6 +19,15 @@ class BikeCreateView(CreateAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 # Bike Update API
+
+class BikeUpdateView(UpdateAPIView):
+    serializer_class = BikeSerializer
+    permission_classes = [IsAdminUser, IsAuthenticated]
+
+    def get_queryset(self):
+        return Bike.objects.all()
+
+
 # Bike list view
 class BikeListView(ListAPIView):
     serializer_class=BikeSerializer
