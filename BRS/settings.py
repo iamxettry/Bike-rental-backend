@@ -95,7 +95,6 @@ REST_FRAMEWORK  ={
     ),
     # 'EXCEPTION_HANDLER': 'common.utils.custom_exception_handler'
 }
-CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',  
     'https://yourfrontenddomain.com',
@@ -115,7 +114,7 @@ CORS_ALLOW_HEADERS = [
     "x-requested-with",
 ]
 
-CSRF_TRUSTED_ORIGINS = ["http://localhost:8000", "http://localhost:3000" "http://localhost:3001", os.environ.get("HOST")]
+CSRF_TRUSTED_ORIGINS = ["http://localhost:8000", "http://localhost:3000", "http://localhost:3001", os.environ.get("HOST")]
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=30),
