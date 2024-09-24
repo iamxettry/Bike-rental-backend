@@ -104,8 +104,10 @@ CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = [
     "accept",
     "accept-encoding",
+    "Authorization",
     "authorization",
     "content-type",
+    'Content-Type',
     "Content-Disposition",
     "dnt",
     "origin",

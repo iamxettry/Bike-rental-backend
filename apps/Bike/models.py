@@ -22,7 +22,7 @@ class Bike(models.Model):
     name = models.CharField(max_length=255)
     rating = models.DecimalField(max_digits=3, decimal_places=1, null=True, blank=True)
     brand = models.CharField(max_length=100, null=True, blank=True)
-    model = models.CharField(max_length=100)
+    model = models.CharField(max_length=100, null=True, blank=True)
     year = models.IntegerField(null=True, blank=True)
     color = models.CharField(max_length=100, null=True, blank=True)
     features = models.OneToOneField(Features, on_delete=models.CASCADE)
