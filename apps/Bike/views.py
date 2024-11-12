@@ -42,3 +42,11 @@ class BikeRetriveView(RetrieveAPIView):
         bike = Bike.objects.get(id=pk)
         serializer = self.get_serializer(bike)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+# Featued Bike List View
+class FeaturedBikeListView(ListAPIView):
+    serializer_class = BikeSerializer
+    pagination_class = None
+    def get_queryset(self):
+        return Bike.objects.filter(isFeatured=True)

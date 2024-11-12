@@ -8,5 +8,6 @@ urlpatterns = [
     path('lists/', BikeListView.as_view(), name='bike-list' ),
     path('retrieve/<uuid:pk>/', BikeRetriveView.as_view(), name='bike-retrieve'),
     path('update/<uuid:pk>/', BikeUpdateView.as_view(), name='bike-update'),
+    path('featured/', FeaturedBikeListView.as_view(), name='featured-bike'),
 ]
 
