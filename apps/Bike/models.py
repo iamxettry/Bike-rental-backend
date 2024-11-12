@@ -24,6 +24,7 @@ class Bike(models.Model):
     brand = models.CharField(max_length=100, null=True, blank=True)
     model = models.CharField(max_length=100, null=True, blank=True)
     year = models.IntegerField(null=True, blank=True)
+    isFeatured = models.BooleanField(default=False)
     color = models.CharField(max_length=100, null=True, blank=True)
     features = models.OneToOneField(Features, on_delete=models.CASCADE)
     price = models.FloatField()
