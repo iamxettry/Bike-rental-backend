@@ -31,6 +31,7 @@ class BikeUpdateView(UpdateAPIView):
 # Bike list view
 class BikeListView(ListAPIView):
     serializer_class=BikeSerializer
+    pagination_class = None
     def get_queryset(self):
         return Bike.objects.all()
 
