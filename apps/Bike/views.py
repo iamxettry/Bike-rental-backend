@@ -50,3 +50,11 @@ class FeaturedBikeListView(ListAPIView):
     pagination_class = None
     def get_queryset(self):
         return Bike.objects.filter(isFeatured=True)
+    
+# Bike Search View
+class BikeSearchView(ListAPIView):
+    serializer_class = BikeSerializer
+    pagination_class = None
+    def get_queryset(self):
+        query = self.request.GET.get('search')
+        return Bike.objects.filter(name__icontains=query)
