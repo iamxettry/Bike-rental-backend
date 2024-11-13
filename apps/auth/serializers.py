@@ -280,7 +280,7 @@ class ChangeForgotPasswordSerializer(serializers.Serializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id','first_name','last_name','username','email', 'profile_picture', 'is_superuser']
+        fields = ['id','first_name','last_name','username','email', 'profile_picture', 'is_superuser', "is_active"]
     
     def get_profile_picture(self, obj):
         request = self.context.get('request')
