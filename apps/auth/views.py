@@ -209,3 +209,48 @@ class UserRetrieve(generics.RetrieveAPIView):
         user = User.objects.get(id=pk)
         serializer = self.get_serializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+# Login Admin View
+
+class LoginAdminView(generics.CreateAPIView):
+    serializer_class = LoginAdminSerializers
+    def post(self, request):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.validated_data['user']
+            if user is None:
+                raise exceptions.AuthenticationFailed("User doesnot exist!.")
+            
+            if user.email_verified :
+                user.is_active=True
+                user.last_login=timezone.now()
+                user.save()
+                tokens=get_tokens_for_user(user)
+                response=Response({'success':'logged in successfully.'}, status=status.HTTP_200_OK)
+                response.set_cookie(
+                    key="access_token", 
+                    value=tokens['access'],
+                    max_age=3600, 
+                    httponly=True,
+                    secure=is_production, 
+                    samesite='None'if is_production else 'lax' 
+                    )
+                response.set_cookie(
+                    key="refresh_token",
+                      value=tokens['refresh'], 
+                      max_age=3600, httponly=True, 
+                      secure=is_production, 
+                      samesite='None'if is_production else 'lax' 
+                      )
+                return  response
+            else:
+                otp_handler= OTPhandlers(request, user, OTPAction.LOGIN)
+                success, message,otp_created_at = otp_handler.send_otp()
+                if not success:
+                    return Response({'error': message}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                return Response({
+                    'success':'Login OTP has been sent to your email address',
+                    'otp_created_at': otp_created_at.isoformat()
+                    
+                     },status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

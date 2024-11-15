@@ -13,4 +13,7 @@ urlpatterns = [
     path('user/details/', UserDetailView.as_view(), name="user-details" ),
     path('users/list/', UserList.as_view(), name="users-list" ),
     path('user/retrieve/<uuid:pk>/', UserRetrieve.as_view(), name="user-retrieve" ),
+
+    # admin
+    path('login/admin/', LoginAdminView.as_view(), name="Login-admin" ),
 ]

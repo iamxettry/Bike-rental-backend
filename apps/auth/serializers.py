@@ -299,3 +299,35 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 
+# login Admin Serializers
+class LoginAdminSerializers(serializers.ModelSerializer):
+    email = serializers.EmailField(error_messages={
+        'required':"Email is required.",
+        'blank':"Email cannot be blank.",
+
+    })
+    password = serializers.CharField(style={'input_type':'password'},error_messages={
+        'required':"Password is required.",
+        'blank':"Password cannot be blank.",
+        
+    })
+    class Meta:
+        model=User
+        fields=['email','password']
+
+    
+    def validate(self, attrs):
+        email = attrs.get('email')
+        password= attrs.get('password')
+
+        if email and password:
+            try :
+               user = User.objects.get(email=email)
+               if user.check_password(password) and user.is_superuser:
+                   return {'user':user}
+               else:
+                   raise exceptions.APIException("Invalid Credentials!")
+            except User.DoesNotExist:
+                raise exceptions.APIException("User doesnot exists")
+        else:
+            raise exceptions.APIException("Invalid Credentials!")
