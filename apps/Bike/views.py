@@ -12,7 +12,9 @@ class BikeCreateView(CreateAPIView):
     serializer_class = BikeSerializer
     permission_classes = [IsAdminUser, IsAuthenticated]
     def post(self, request, *args, **kwargs):
+        print("Request Data:", request.data)
         serializer = self.get_serializer(data=request.data)
+        
         if serializer.is_valid():
             serializer.save()
             return Response({"success": "Bike Added Successfully."}, status=status.HTTP_201_CREATED)
