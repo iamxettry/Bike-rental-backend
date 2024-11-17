@@ -11,8 +11,8 @@ START_CHOICES = (
 
 class Features(models.Model):
     start = models.CharField(max_length=100, choices=START_CHOICES, default='SELF START ONLY') 
-    engine = models.CharField(max_length=100) 
-    distance = models.CharField(max_length=100)  
+    engine = models.CharField(max_length=100, null=True, blank=True) 
+    distance = models.CharField(max_length=100, null=True, blank=True)  
 
     def __str__(self):
         return f"{self.engine}, {self.distance}, {self.start}"
@@ -26,7 +26,9 @@ class Bike(models.Model):
     year = models.IntegerField(null=True, blank=True)
     isFeatured = models.BooleanField(default=False)
     color = models.CharField(max_length=100, null=True, blank=True)
-    features = models.OneToOneField(Features, on_delete=models.CASCADE)
+    start = models.CharField(max_length=100, choices=START_CHOICES, default='SELF_START_ONLY') 
+    engine = models.CharField(max_length=100, null=True, blank=True) 
+    distance = models.CharField(max_length=100, null=True, blank=True)  
     price = models.FloatField()
     description = models.TextField(null=True, blank=True)
     image = models.ImageField(upload_to='images/bikes', null=True, blank=True)
