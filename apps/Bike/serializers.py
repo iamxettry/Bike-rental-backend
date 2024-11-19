@@ -19,7 +19,7 @@ class BikeSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def validate(self, attrs):
-        if attrs.get('price', 0) < 500:
+        if not self.partial and attrs.get('price', 0) < 500:
             raise exceptions.APIException("Price should be greater than 500.")
         return super().validate(attrs)
    
