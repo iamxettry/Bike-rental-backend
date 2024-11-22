@@ -45,6 +45,17 @@ class BikeRetriveView(RetrieveAPIView):
         serializer = self.get_serializer(bike)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+# Delete Bike 
+class BikeDeleteView(DestroyAPIView):
+    serializer_class = BikeSerializer
+    permission_classes = [IsAdminUser, IsAuthenticated]
+    def get_queryset(self):
+        return Bike.objects.all()
+    
+    def delete(self, request, pk):
+        bike = Bike.objects.get(id=pk)
+        bike.delete()
+        return Response({"success": "Bike Deleted Successfully."}, status=status.HTTP_204_NO_CONTENT)
 
 # Featued Bike List View
 class FeaturedBikeListView(ListAPIView):
