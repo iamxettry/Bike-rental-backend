@@ -25,6 +25,7 @@ class Bike(models.Model):
     model = models.CharField(max_length=100, null=True, blank=True)
     year = models.IntegerField(null=True, blank=True)
     isFeatured = models.BooleanField(default=False)
+    isAvailable = models.BooleanField(default=False)
     color = models.CharField(max_length=100, null=True, blank=True)
     start = models.CharField(max_length=100, choices=START_CHOICES, default='SELF_START_ONLY') 
     engine = models.CharField(max_length=100, null=True, blank=True) 
