@@ -4,7 +4,7 @@ from .serializers import BikeSerializer
 from .models import Bike
 from rest_framework.response import Response
 from rest_framework import status
-
+from django.db.models import Q
 from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView, UpdateAPIView, DestroyAPIView
 
 # Bike Create API
@@ -70,4 +70,10 @@ class BikeSearchView(ListAPIView):
     pagination_class = None
     def get_queryset(self):
         query = self.request.GET.get('search')
-        return Bike.objects.filter(name__icontains=query)
+        if query:
+            return Bike.objects.filter(
+                Q(name__icontains=query) |
+                Q(model__icontains=query) |
+                Q(brand__icontains=query)
+            )
+        return Bike.objects.all()
