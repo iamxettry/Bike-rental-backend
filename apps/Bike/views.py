@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
-from .serializers import BikeSerializer, RatingSerializer
-from .models import Bike
+from .serializers import *
+from .models import Bike, Rating
 from rest_framework.response import Response
 from rest_framework import status
 from django.db.models import Q
@@ -41,10 +41,13 @@ class BikeListView(ListAPIView):
 class BikeRetriveView(RetrieveAPIView):
     serializer_class = BikeSerializer
     def get(self, request, pk):
-        bike = Bike.objects.get(id=pk)
-        serializer = self.get_serializer(bike)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
+        try:
+            bike = Bike.objects.get(id=pk)
+            serializer = self.get_serializer(bike)
+            print(serializer.data)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Bike.DoesNotExist:
+            return Response({"error": "Bike does not exist."}, status=status.HTTP_404_NOT_FOUND)
 # Delete Bike 
 class BikeDeleteView(DestroyAPIView):
     serializer_class = BikeSerializer
@@ -80,7 +83,7 @@ class BikeSearchView(ListAPIView):
     
 # Bike Rating View
 class BikeRatingView(CreateAPIView):
-    serializer_class = RatingSerializer
+    serializer_class = RatingPostSerializer
     permission_classes = [IsAuthenticated]
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -88,3 +91,6 @@ class BikeRatingView(CreateAPIView):
             serializer.save(user=request.user)
             return Response({"success": "Rating Added Successfully."}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+#
