@@ -12,6 +12,7 @@ urlpatterns = [
     path('api/v1/', include([
         path('auth/', include('apps.auth.urls')),
         path('bike/', include('apps.Bike.urls')),
+        path('common/', include('apps.common.urls')),
 
     ])),
 ]
