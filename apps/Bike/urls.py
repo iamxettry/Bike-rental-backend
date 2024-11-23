@@ -11,5 +11,6 @@ urlpatterns = [
     path('featured/', FeaturedBikeListView.as_view(), name='featured-bike'),
     path('search/', BikeSearchView.as_view(), name='bike-search'),
     path('delete/<uuid:pk>/', BikeDeleteView.as_view(), name='bike-delete'),
+    path('rating/', BikeRatingView.as_view(), name='rating'),
 ]
 

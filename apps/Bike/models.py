@@ -1,6 +1,6 @@
 from django.db import models
 import uuid
-
+from django.db.models import Avg
 
 START_CHOICES = (
     ('SELF_START_ONLY', 'Self Start Only'),
@@ -20,7 +20,6 @@ class Features(models.Model):
 class Bike(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255)
-    rating = models.DecimalField(max_digits=3, decimal_places=1, null=True, blank=True)
     brand = models.CharField(max_length=100, null=True, blank=True)
     model = models.CharField(max_length=100, null=True, blank=True)
     year = models.IntegerField(null=True, blank=True)
@@ -37,3 +36,19 @@ class Bike(models.Model):
 
     def __str__(self):
         return self.name
+    def average_rating(self):
+        # Calculate average rating for this bike
+        avg_rating = self.ratings.aggregate(Avg('rating'))['rating__avg']
+        return avg_rating if avg_rating is not None else 0.0
+
+# Rating model
+
+class Rating(models.Model):
+    user= models.ForeignKey('authentication.User', on_delete=models.CASCADE)
+    bike_id = models.ForeignKey(Bike, on_delete=models.CASCADE, related_name='ratings')
+    rating = models.DecimalField(max_digits=3, decimal_places=1)
+    comment = models.TextField(null=True, blank=True)
+    date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.bike_id.name} - {self.rating}"

@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
-from .serializers import BikeSerializer
+from .serializers import BikeSerializer, RatingSerializer
 from .models import Bike
 from rest_framework.response import Response
 from rest_framework import status
@@ -77,3 +77,14 @@ class BikeSearchView(ListAPIView):
                 Q(brand__icontains=query)
             )
         return Bike.objects.all()
+    
+# Bike Rating View
+class BikeRatingView(CreateAPIView):
+    serializer_class = RatingSerializer
+    permission_classes = [IsAuthenticated]
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(user=request.user)
+            return Response({"success": "Rating Added Successfully."}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
