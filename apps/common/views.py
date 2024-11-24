@@ -36,3 +36,27 @@ class LocationRetriveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAdminUser, IsAuthenticated]
     def get_queryset(self):
         return Location.objects.all()
+    
+    # update 
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            return Response({"success": "Location Updated Successfully."}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    # delete
+    def delete(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.delete()
+        return Response({"success": "Location Deleted Successfully."}, status=status.HTTP_204_NO_CONTENT)
+
+# location search
+class LocationSearchView(ListAPIView):
+    serializer_class = LocationSerializer
+    pagination_class = None
+
+    def get_queryset(self):
+        query = self.request.query_params.get('search')
+        return Location.objects.filter(city__icontains=query) if query else Location.objects.all()
