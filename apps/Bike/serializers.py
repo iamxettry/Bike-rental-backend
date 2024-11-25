@@ -40,6 +40,7 @@ class FeaturesSerializer(serializers.ModelSerializer):
 class BikeSerializer(serializers.ModelSerializer):
     average_rating = serializers.SerializerMethodField()
     ratings = RatingSerializer(many=True, read_only=True)
+    locations = serializers.StringRelatedField(many=True)
     # raging count
     ratings_count = serializers.SerializerMethodField()
     # features = FeaturesSerializer()

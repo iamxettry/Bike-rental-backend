@@ -1,7 +1,7 @@
 from django.db import models
 import uuid
 from django.db.models import Avg
-
+from apps.common.models import Location
 START_CHOICES = (
     ('SELF_START_ONLY', 'Self Start Only'),
     ('KICK_AND_SELF_START', 'Kick & Self Start'),
@@ -33,7 +33,7 @@ class Bike(models.Model):
     description = models.TextField(null=True, blank=True)
     image = models.ImageField(upload_to='images/bikes', null=True, blank=True)
     date = models.DateTimeField(auto_now_add=True)
-
+    locations = models.ManyToManyField(Location, related_name="bikes")
     def __str__(self):
         return self.name
     def average_rating(self):
