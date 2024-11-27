@@ -6,28 +6,77 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.db.models import Q
 from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView, UpdateAPIView, DestroyAPIView
-
+from rest_framework.views import APIView
+from rest_framework.exceptions import ValidationError
 # Bike Create API
-class BikeCreateView(CreateAPIView):
-    serializer_class = BikeSerializer
+class BikeCreateView(APIView):
     permission_classes = [IsAdminUser, IsAuthenticated]
+
     def post(self, request, *args, **kwargs):
-        print("Request Data:", request.data)
-        serializer = self.get_serializer(data=request.data)
+
+        # Handle locations data separately
+        locations_data = request.data.getlist("locations[]")
+        print("Locations Data 1:", locations_data)
+
+        # Create a new bike instance with the incoming data
+        serializer = BikeSerializer(data=request.data)
         
         if serializer.is_valid():
-            serializer.save()
-            return Response({"success": "Bike Added Successfully."}, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            # First save the bike (without locations)
+            bike = serializer.save()
+
+            # Handle locations if provided
+            if locations_data:
+                try:
+                    # Add the locations to the bike
+                    for location_uuid in locations_data:
+                        location = Location.objects.get(id=location_uuid)
+                        bike.locations.add(location)
+                except Location.DoesNotExist:
+                    return Response({"detail": "One or more locations not found."}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Return the response with the created bike data
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            # Return validation errors if serializer is not valid
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 # Bike Update API
 
-class BikeUpdateView(UpdateAPIView):
-    serializer_class = BikeSerializer
+class BikeUpdateView(APIView):
     permission_classes = [IsAdminUser, IsAuthenticated]
 
-    def get_queryset(self):
-        return Bike.objects.all()
+    def get_object(self, bike_id):
+        try:
+            return Bike.objects.get(id=bike_id)
+        except Bike.DoesNotExist:
+            raise ValidationError("Bike not found")
+
+    def patch(self, request, *args, **kwargs):
+        # Get bike instance by ID from URL parameters
+        bike_id = kwargs.get("pk")
+        bike = self.get_object(bike_id)
+
+        # Deserialize the incoming request data
+        serializer = BikeSerializer(bike, data=request.data, partial=True)
+        
+        if serializer.is_valid():
+            # Handle locations data separately
+            locations_data = request.data.getlist("locations[]")
+            if locations_data:
+                try:
+                    bike.locations.clear()
+                    for location_uuid in locations_data:
+                        location = Location.objects.get(id=location_uuid)
+                        bike.locations.add(location)
+                except Location.DoesNotExist:
+                    return Response({"detail": "One or more locations not found."}, status=status.HTTP_400_BAD_REQUEST)
+
+            serializer.save()
+
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 # Bike list view

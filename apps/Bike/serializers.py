@@ -1,6 +1,6 @@
 
 from rest_framework import serializers, exceptions
-from .models import Bike, Features, Rating
+from .models import Bike, Features, Rating, Location
 from apps.auth.models import User
 import json
 START_CHOICES = (
@@ -9,6 +9,12 @@ START_CHOICES = (
     ('KICK_START_ONLY', 'Kick Start Only'),
 )
 
+
+# location Seraializer
+class LocationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Location
+        fields = ['id', 'city']
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -37,10 +43,13 @@ class FeaturesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Features
         fields = ['start', 'engine', 'distance']
+
+
+# Bike Serializer
 class BikeSerializer(serializers.ModelSerializer):
     average_rating = serializers.SerializerMethodField()
     ratings = RatingSerializer(many=True, read_only=True)
-    locations = serializers.StringRelatedField(many=True)
+    locations = LocationSerializer(many=True,required=False)
     # raging count
     ratings_count = serializers.SerializerMethodField()
     # features = FeaturesSerializer()
@@ -58,3 +67,4 @@ class BikeSerializer(serializers.ModelSerializer):
         if not self.partial and attrs.get('price', 0) < 500:
             raise exceptions.APIException("Price should be greater than 500.")
         return super().validate(attrs)
+   
