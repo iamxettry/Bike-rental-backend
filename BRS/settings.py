@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'apps.auth',
     'apps.common',
     'apps.Bike',
+    'apps.Bike_rent',
 ]
 
 MIDDLEWARE = [

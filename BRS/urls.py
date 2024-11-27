@@ -13,6 +13,7 @@ urlpatterns = [
         path('auth/', include('apps.auth.urls')),
         path('bike/', include('apps.Bike.urls')),
         path('common/', include('apps.common.urls')),
+        path('rent/', include('apps.Bike_rent.urls')),
 
     ])),
 ]
