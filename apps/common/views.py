@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from .serializers import *
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView, RetrieveAPIView
 
 # Create Location API
 class LocationCreateView(CreateAPIView):
@@ -30,6 +30,17 @@ class LocationListView(ListAPIView):
 
     def get_queryset(self):
         return Location.objects.all()
+
+class LocationRetrive(RetrieveAPIView):
+    serializer_class = LocationSerializer
+
+    def get(self, request, pk):
+        try:
+            bike = Location.objects.get(id=pk)
+            serializer = self.get_serializer(bike)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Location.DoesNotExist:
+            return Response({"detail": "Location does not exist."}, status=status.HTTP_404_NOT_FOUND)
 
 class LocationRetriveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
     serializer_class = LocationSerializer
