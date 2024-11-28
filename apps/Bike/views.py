@@ -134,8 +134,8 @@ class BikeSearchView(ListAPIView):
             return Bike.objects.filter(
                 Q(name__icontains=query) |
                 Q(model__icontains=query) |
-                Q(brand__icontains=query) |
-                Q(locations__city__icontains=query)
+                Q(brand__icontains=query) 
+                # Q(locations__city__icontains=query)
             )
         return Bike.objects.all()
     
