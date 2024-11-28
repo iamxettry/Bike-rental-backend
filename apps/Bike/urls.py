@@ -13,5 +13,6 @@ urlpatterns = [
     path('search/', BikeSearchView.as_view(), name='bike-search'),
     path('delete/<uuid:pk>/', BikeDeleteView.as_view(), name='bike-delete'),
     path('rating/', BikeRatingView.as_view(), name='rating'),
+    path('location/<uuid:pk>/', BikeLocationView.as_view(), name='locations'),
 ]
 

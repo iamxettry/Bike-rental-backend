@@ -151,4 +151,11 @@ class BikeRatingView(CreateAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-#
+#get bike on locations
+class BikeLocationView(ListAPIView):
+    serializer_class = BikeSerializer
+    pagination_class = None
+    def get_queryset(self):
+        location_id = self.kwargs.get("pk")
+        print("location_id", location_id)
+        return Bike.objects.filter(locations=location_id)
