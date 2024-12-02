@@ -4,6 +4,8 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 from apps.Bike.models import Bike
 from apps.auth.models import User
+import uuid
+
 # Create your models here.
 class BikeRental(models.Model):
     PAYMENT_STATUS_CHOICES = [
@@ -19,7 +21,13 @@ class BikeRental(models.Model):
         ('cancelled', 'Cancelled'),
         ('overdue', 'Overdue')
     ]
-
+    PAYMENT_METHOD_CHOICES = [
+        ('online', 'Online'),
+        ('pickup', 'Pay at Pickup'),
+        ('dropoff', 'Pay at Dropoff'),
+        ('partial', 'Partial Payment')
+    ]
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(User, on_delete=models.PROTECT)
     bike = models.ForeignKey(Bike, on_delete=models.PROTECT)
     pickup_location = models.CharField(max_length=255)
@@ -29,6 +37,7 @@ class BikeRental(models.Model):
     actual_dropoff_date = models.DateTimeField(null=True, blank=True)
     
     # Payment and status tracking
+    payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES, default='online')
     payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='pending')
     rental_status = models.CharField(max_length=20, choices=RENTAL_STATUS_CHOICES, default='active')
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
@@ -50,8 +59,7 @@ class BikeRental(models.Model):
     def calculate_total_amount(self):
         """Calculate the total rental amount based on duration and bike category rate"""
         duration = self.dropoff_date - self.pickup_date
-        hours = duration.total_seconds() / 3600
-        return round(float(self.bike.category.hourly_rate) * hours, 2)
+        return round(float(self.bike.price) * duration, 2)
     
     def save(self, *args, **kwargs):
         # Calculate total amount before saving
@@ -72,7 +80,7 @@ class BikeRental(models.Model):
         return timezone.now() > self.dropoff_date
     
     def __str__(self):
-        return f"Rental {self.id} - {self.user.username} - {self.bike.bike_number}"
+        return f"Rental {self.id} - {self.user.username} - {self.bike.name}"
 
     class Meta:
         ordering = ['-created_at']
