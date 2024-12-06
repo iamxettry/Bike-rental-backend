@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'apps.common',
     'apps.Bike',
     'apps.Bike_rent',
+    'apps.payment',
 ]
 
 MIDDLEWARE = [

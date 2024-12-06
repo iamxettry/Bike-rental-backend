@@ -14,6 +14,7 @@ urlpatterns = [
         path('bike/', include('apps.Bike.urls')),
         path('common/', include('apps.common.urls')),
         path('rent/', include('apps.Bike_rent.urls')),
+        path('payment/', include('apps.payment.urls')),
 
     ])),
 ]
