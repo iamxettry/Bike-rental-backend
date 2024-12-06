@@ -31,7 +31,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-
+# KHALTI_SECRET_KEY = "<your api key>"
+# KHALTI_VERIFY_URL = "https://khalti.com/api/v2/payment/verify/"
 # Application definition
 
 INSTALLED_APPS = [
@@ -54,7 +55,10 @@ INSTALLED_APPS = [
     'apps.common',
     'apps.Bike',
     'apps.Bike_rent',
+
+    # payment app
     'apps.payment',
+    # 'khalti'
 ]
 
 MIDDLEWARE = [
