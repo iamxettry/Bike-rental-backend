@@ -41,22 +41,20 @@ class InitiatePaymentSerializer(serializers.ModelSerializer):
             order = BikeRental.objects.get(id=rental_id.id)
         except BikeRental.DoesNotExist:
             raise exceptions.APIException('Bike rent does not exist')
-        
-        print("attrs", order)
-        
+                
 
         purchase_rental_id = str(order.id)
         purchase_order_name = user.username+"'s Payment"
-        amount = attrs.get('amount',None)
+        amount = float(attrs.get('amount_paid', None))
         # return_url = attrs.get('return_url',None)
 
         url = f'{os.environ.get("KHALTI_BASE_URL")}epayment/initiate/'
 
         payload = json.dumps({
-            "return_url": "localhost:3000",
+            "return_url": os.environ.get('KHALTI_RETUR_URL'),
             "website_url": "http://127.0.0.1:8000",
             "amount": amount,
-            "purchase_rental_id": purchase_rental_id,
+            "purchase_order_id": purchase_rental_id,
             "purchase_order_name": purchase_order_name,
             "customer_info":{
                 "name":f'{user.username} ',
@@ -72,24 +70,17 @@ class InitiatePaymentSerializer(serializers.ModelSerializer):
         
         response = requests.request("POST",url,headers=headers, data=payload)
 
-        res = json.loads(response.text)
+        res = {
+            "status": response.status_code,
+            "message": response.text,
+            "result":json.loads(response.text)
+        }
         
         # order.pidx = res.get('pidx')
         # order.save()
         
         attrs['response'] = res
         return attrs
-    
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        errors = self.errors
-        if errors:
-            formatted_errors = {field: [message for message in messages] for field, messages in errors.items()}
-            return {
-                'errors': formatted_errors
-            }
-        return representation
-    
     def create(self, validated_data):
         user = self.context['request'].user
 
@@ -109,6 +100,18 @@ class InitiatePaymentSerializer(serializers.ModelSerializer):
             return payment
         except BikeRental.DoesNotExist:
             raise exceptions.APIException('Bike rental not found')
+        
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        errors = self.errors
+        if errors:
+            formatted_errors = {field: [message for message in messages] for field, messages in errors.items()}
+            return {
+                'errors': formatted_errors
+            }
+        return representation
+    
+    
 
 
 class VerifyPaymentSerializer(serializers.Serializer):

@@ -11,11 +11,9 @@ class InitiatePaymentView(generics.GenericAPIView):
     serializer_class = InitiatePaymentSerializer
     permission_classes = [IsAuthenticated]
     def post(self, request, *args, **kwargs):
-        print("data", request.data)
         serializer = self.get_serializer(data=request.data)
-        if serializer.is_valid():
+        if serializer.is_valid(raise_exception=True):
             response = serializer.validated_data.get('response')
-            print("response",response)
             if not response:
                 return Response({"detail": "No response received from payment gateway"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             return Response(response, status=status.HTTP_200_OK)
