@@ -87,3 +87,13 @@ class BikeRentalViewSet(viewsets.ModelViewSet):
         active_rentals = self.get_queryset().filter(rental_status='active')
         serializer = self.get_serializer(active_rentals, many=True)
         return Response(serializer.data)
+
+
+# Views to update bike rent for payment at pickup
+class BikeRentUpdateView(APIView):
+    serializer_class = BikeRentalSerializer
+    permission_classes=[IsAuthenticated]
+
+    def patch(self, request):
+        print("data", self.pk)
+        return True
