@@ -11,13 +11,16 @@ class InitiatePaymentView(generics.GenericAPIView):
     serializer_class = InitiatePaymentSerializer
     permission_classes = [IsAuthenticated]
     def post(self, request, *args, **kwargs):
+        print("data", request.data)
         serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        
-        response = serializer.validated_data.get('response')
-        if not response:
-            return Response({"error": "No response received from payment gateway"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        return Response(response, status=status.HTTP_200_OK)
+        if serializer.is_valid():
+            response = serializer.validated_data.get('response')
+            print("response",response)
+            if not response:
+                return Response({"detail": "No response received from payment gateway"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(response, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class VerifyPaymentView(generics.GenericAPIView):
     serializer_class = VerifyPaymentSerializer
@@ -28,12 +31,14 @@ class VerifyPaymentView(generics.GenericAPIView):
             return Response({"error": "pidx not provided"}, status=status.HTTP_400_BAD_REQUEST)
 
         serializer = self.get_serializer(data={'pidx': pidx})
-        serializer.is_valid(raise_exception=True)
+        if serializer.is_valid(raise_exception=True):
         
-        response = serializer.validated_data.get('response')
-        if not response:
-            return Response({"error": "No response received from payment gateway"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        return Response(response,status=status.HTTP_200_OK)
+            response = serializer.validated_data.get('response')
+            if not response:
+                return Response({"detail": "No response received from payment gateway"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(response,status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
 

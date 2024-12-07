@@ -6,24 +6,24 @@ import os
 import requests
 from uuid import UUID
 from .models import Payment
-class InitiatePaymentSerializer(serializers.Serializer):
+class InitiatePaymentSerializer(serializers.ModelSerializer):
  
-    return_url = serializers.URLField(required=True,
-        error_messages={
-            'required': 'Return URL is required.',
-            'blank': 'Return RUL cannot be blank.',
-            'invalid': 'Return URL is invalid.'
-        })
+    # return_url = serializers.URLField(required=True,
+    #     error_messages={
+    #         'required': 'Return URL is required.',
+    #         'blank': 'Return RUL cannot be blank.',
+    #         'invalid': 'Return URL is invalid.'
+    #     })
 
 
     class Meta:
         model = Payment
-        fields = ['id', 'rental', 'payment_method', 'payment_status', 'total_amount', 
+        fields = ['id', 'rental', 'payment_method', 'total_amount', 
             'amount_paid', 'remaining_amount', 'payment_date', 'transaction_id', 'payment_details']
 
     def validate(self, attrs):
-        rental_id = attrs.get('rental_id',None)
-
+        user = self.context['request'].user
+        rental_id = attrs.get('rental',None)
         total_amount = attrs.get('total_amount')
         amount_paid = attrs.get('amount_paid')
 
@@ -32,36 +32,28 @@ class InitiatePaymentSerializer(serializers.Serializer):
             raise exceptions.APIException("Amount paid cannot exceed the total amount.")
         
         try:
-            UUID(str(rental_id))
+            UUID(str(rental_id.id))
 
         except ValueError:
             raise exceptions.APIException("Invalid order UUID")
 
         try:
-            order = BikeRental.objects.get(id=rental_id)
+            order = BikeRental.objects.get(id=rental_id.id)
         except BikeRental.DoesNotExist:
             raise exceptions.APIException('Bike rent does not exist')
-
-        user_id = attrs.get('user_id',None)
-        try:
-            UUID(str(user_id))
-        except ValueError:
-            raise exceptions.APIException("Invalid user UUID")
-
-        try:
-            user = User.objects.get(id=user_id)
-        except User.DoesNotExist:
-            raise exceptions.APIException('User does not exist')
+        
+        print("attrs", order)
+        
 
         purchase_rental_id = str(order.id)
         purchase_order_name = user.username+"'s Payment"
         amount = attrs.get('amount',None)
-        return_url = attrs.get('return_url',None)
+        # return_url = attrs.get('return_url',None)
 
         url = f'{os.environ.get("KHALTI_BASE_URL")}epayment/initiate/'
 
         payload = json.dumps({
-            "return_url": return_url,
+            "return_url": "localhost:3000",
             "website_url": "http://127.0.0.1:8000",
             "amount": amount,
             "purchase_rental_id": purchase_rental_id,
