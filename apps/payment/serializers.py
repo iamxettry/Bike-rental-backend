@@ -18,8 +18,8 @@ class InitiatePaymentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Payment
-        fields = ['id', 'rental', 'payment_method', 'total_amount', 
-            'amount_paid', 'remaining_amount', 'payment_date', 'transaction_id', 'payment_details']
+        fields = ['id', 'product_id', 'status', 'total_amount', 
+            'amount_paid', 'remaining_amount', 'payment_date', 'transaction_id']
 
     def validate(self, attrs):
         user = self.context['request'].user
@@ -88,7 +88,7 @@ class InitiatePaymentSerializer(serializers.ModelSerializer):
             # crete Payment 
             payment = Payment.objects.create(
                 user=user,
-                rental=validated_data['rental'],
+                product_id=validated_data['rental'],
                 total_amount=validated_data['total_amount'],
                 amount_paid=validated_data['amount_paid'],
                 remaining_amount=validated_data['total_amount'] - validated_data['amount_paid'],
@@ -156,6 +156,11 @@ class VerifyPaymentSerializer(serializers.Serializer):
 
 # E-sewa serializers 
 
+class EsewaPaymentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Payment
+        fields = ['id', 'total_amount','amount_paid','remaining_amount', 'product_id',  'transaction_id', 'status', 'created_at']
+        read_only_fields = ['status', 'transaction_id', 'created_at']
 
 class EsewaPaymentRequestSerializer(serializers.Serializer):
     amount = serializers.DecimalField(max_digits=10, decimal_places=2,
