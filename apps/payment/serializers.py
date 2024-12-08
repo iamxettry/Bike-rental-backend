@@ -184,13 +184,22 @@ class EsewaPaymentSerializer(serializers.ModelSerializer):
         return data
 
     def create(self, validated_data):
+        user = self.context['request'].user
+        # Calculate remaining amount
+        bike_rental = validated_data.pop('product_id')
+        print("bike_rental", bike_rental)
+        
         # Calculate remaining amount
         total_amount = validated_data.get('total_amount')
         amount_paid = validated_data.get('amount_paid')
         remaining_amount = total_amount - amount_paid
         
-        # Add remaining_amount to validated_data
-        validated_data['remaining_amount'] = remaining_amount
+        # Add remaining_amount and other data to validated_data
+        validated_data.update({
+            'remaining_amount': remaining_amount,
+            'user': user,
+            'product_id': bike_rental  
+        })
         
         return super().create(validated_data)
 

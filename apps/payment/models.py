@@ -34,7 +34,7 @@ class Payment(models.Model):
         super().save(*args, **kwargs)
         
     def __str__(self):
-        return f"Payment {self.id} for Rental {self.rental.id} "
+        return f"Payment {self.id} for Rental {self.product_id.id} "
 
     class Meta:
         ordering = ['-payment_date']

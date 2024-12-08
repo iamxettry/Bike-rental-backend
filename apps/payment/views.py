@@ -10,6 +10,9 @@ from .models import Payment
 from .utils import generate_transaction_id, get_esewa_url, generate_esewa_form_data
 import requests
 from django.conf import settings
+from apps.Bike_rent.models import BikeRental
+
+from uuid import UUID
 
 import re
 
@@ -51,9 +54,20 @@ class VerifyPaymentView(generics.GenericAPIView):
 class EsewaPaymentViewSet(viewsets.ModelViewSet):
     queryset = Payment.objects.all()
     serializer_class = EsewaPaymentSerializer
+    permission_classes = [IsAuthenticated]
 
     @action(detail=False, methods=['post'])
     def initiate(self, request):
+        bike_rental_id = request.data.get('product_id')
+        try:
+            bike_rental = BikeRental.objects.get(id=bike_rental_id)
+            request.data['product_id'] = bike_rental.id
+        except BikeRental.DoesNotExist:
+            return Response({
+                'error': 'Invalid bike rental ID'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             # Create payment record
@@ -74,43 +88,89 @@ class EsewaPaymentViewSet(viewsets.ModelViewSet):
             })
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['post'])
     def verify(self, request):
-        ref_id = request.query_params.get('refId')
-        transaction_id = request.query_params.get('oid')
-        
-        if not ref_id or not transaction_id:
+        """
+        Verify eSewa payment with parameters matching frontend implementation
+        """
+        oid = request.data.get('oid')
+        amt = request.data.get('amt')
+        ref_id = request.data.get('refId')
+        rental_id = request.data.get('rentalId')
+        print(f"Received transaction ID (oid): {oid}")
+        print(f"Verify payment request data: {request.data}")
+        try:
+            UUID(oid)  # This will raise an exception if `oid` is not a valid UUID
+        except ValueError:
             return Response({
+        'success': False,
+        'message': 'Invalid transaction ID format. Must be a valid UUID.'
+         }, status=status.HTTP_400_BAD_REQUEST)
+        if not all([oid, amt, ref_id]):
+            return Response({
+                'success': False,
                 'message': 'Missing required parameters'
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        payment = get_object_or_404(Payment, transaction_id=transaction_id)
-        
-        # Verify with eSewa
-        verify_url = "https://uat.esewa.com.np/epay/transrec"  # Use prod URL in production
-        data = {
-            'amt': payment.amount,
-            'rid': ref_id,
-            'pid': payment.product_id,
-            'scd': settings.ESEWA_SCD
-        }
-        
-        response = requests.post(verify_url, data=data)
-        
-        if response.status_code == 200 and "Success" in response.text:
-            payment.status = 'SUCCESS'
+        try:
+            # Get payment using the oid (transaction_id)
+            try:
+                payment = Payment.objects.get(transaction_id=oid)
+                print(f"Found payment: {payment.id} with transaction_id: {payment.transaction_id}")  
+            except Payment.DoesNotExist:
+                # Log all payments for debugging
+                all_payments = Payment.objects.all().values('id', 'transaction_id')
+                return Response({
+                    'success': False,
+                    'message': f"No payment found with transaction_id: {oid}",
+                    'debug_info': {
+                        'received_oid': oid,
+                        'all_transaction_ids': list(all_payments)
+                    }
+                }, status=status.HTTP_404_NOT_FOUND)
+            # Verify with eSewa
+            verify_url = "https://uat.esewa.com.np/epay/transrec"  # Use prod URL in production
+            data = {
+                'amt': amt,
+                'rid': ref_id,
+                'pid': oid,
+                'scd': settings.ESEWA_SCD
+            }
+            response = requests.post(verify_url, data=data)
+            print(f"eSewa verification response: {response.text}")
+            if response.status_code == 200 and "Success" in response.text:
+                payment.status = 'SUCCESS'
+                payment.save()
+                
+                # Update bike rental status if needed
+                try:
+                    bike_rental = BikeRental.objects.get(id=rental_id)
+                    bike_rental.payment_status = 'paid'  # Add appropriate status field
+                    bike_rental.save()
+                except BikeRental.DoesNotExist:
+                    print(f"BikeRental not found with ID: {rental_id}")
+                    pass  # Handle as needed
+                
+                return Response({
+                    'success': True,
+                    'message': 'Payment verified successfully',
+                    'status': payment.status,
+                })
+            
+            payment.status = 'FAILED'
             payment.save()
             return Response({
-                'message': 'Payment verified successfully',
+                'success': False,
+                'message': 'Payment verification failed',
                 'status': payment.status
-            })
-        
-        payment.status = 'FAILED'
-        payment.save()
-        return Response({
-            'message': 'Payment verification failed',
-            'status': payment.status
-        }, status=status.HTTP_400_BAD_REQUEST)
+            }, status=status.HTTP_400_BAD_REQUEST)
+            
+        except Exception as e:
+            print(f"Unexpected error during verification: {str(e)}")
+            return Response({
+                'success': False,
+                'message': str(e)
+            }, status=status.HTTP_400_BAD_REQUEST)
 class EsewaRequestView(APIView):
     def post(self, request):
         serializer = EsewaPaymentRequestSerializer(data=request.data, context={"request":request})

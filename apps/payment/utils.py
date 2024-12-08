@@ -10,12 +10,12 @@ def get_esewa_url():
 
 def generate_esewa_form_data(payment):
     return {
-        'amt': payment.amount,
+        'amt': payment.amount_paid,
         'pdc': 0,
         'psc': 0,
         'txAmt': 0,
-        'tAmt': payment.amount,
-        'pid': payment.product_id,
+        'tAmt': payment.amount_paid,
+        'pid': str(payment.transaction_id),
         'scd': settings.ESEWA_SCD,
         'su': settings.ESEWA_SUCCESS_URL,
         'fu': settings.ESEWA_FAILURE_URL
