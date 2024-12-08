@@ -16,6 +16,7 @@ class BikeRental(models.Model):
     ]
     
     RENTAL_STATUS_CHOICES = [
+        ('pending', 'Pending'),
         ('active', 'Active'),
         ('completed', 'Completed'),
         ('cancelled', 'Cancelled'),
@@ -39,7 +40,7 @@ class BikeRental(models.Model):
     # Payment and status tracking
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES, default='online')
     payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='pending')
-    rental_status = models.CharField(max_length=20, choices=RENTAL_STATUS_CHOICES, default='active')
+    rental_status = models.CharField(max_length=20, choices=RENTAL_STATUS_CHOICES, default='pending')
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
     
     # Additional tracking fields
@@ -67,12 +68,14 @@ class BikeRental(models.Model):
             self.total_amount = self.calculate_total_amount()
         
         # Update bike status
-        if self.rental_status == 'active':
-            self.bike.condition = 'rented'
+        if self.payment_status == 'paid' or (
+            self.payment_method == 'pickup' and self.payment_status != 'failed'
+        ):
+            self.rental_status = 'active'
         elif self.rental_status in ['completed', 'cancelled']:
             self.bike.condition = 'available'
-        self.bike.save()
         
+        self.bike.save()
         super().save(*args, **kwargs)
     
     def is_expired(self):
