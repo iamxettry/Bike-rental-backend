@@ -19,30 +19,34 @@ class BikeRentalSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         try:
+            instance = self.instance
             # Ensure dates are datetime objects
-            pickup_date = data['pickup_date']
-            dropoff_date = data['dropoff_date']
+            pickup_date = data.get('pickup_date', getattr(instance, 'pickup_date', None))
+            dropoff_date = data.get('dropoff_date', getattr(instance, 'dropoff_date', None))
             
-            if not isinstance(pickup_date, datetime):
-                pickup_date = timezone.make_aware(datetime.strptime(pickup_date, "%Y-%m-%dT%H:%M:%S"))
-            if not isinstance(dropoff_date, datetime):
-                dropoff_date = timezone.make_aware(datetime.strptime(dropoff_date, "%Y-%m-%dT%H:%M:%S"))
-            
-            data['pickup_date'] = pickup_date
-            data['dropoff_date'] = dropoff_date
+            if pickup_date and dropoff_date:
+                if not isinstance(pickup_date, datetime):
+                    pickup_date = timezone.make_aware(datetime.strptime(pickup_date, "%Y-%m-%dT%H:%M:%S"))
+                if not isinstance(dropoff_date, datetime):
+                    dropoff_date = timezone.make_aware(datetime.strptime(dropoff_date, "%Y-%m-%dT%H:%M:%S"))
+                
+                data['pickup_date'] = pickup_date
+                data['dropoff_date'] = dropoff_date
 
-            if dropoff_date <= pickup_date:
-                raise exceptions.APIException("Dropoff date must be after pickup date.")
-            
-            if pickup_date.date() < timezone.now().date():  # Compare only the date part
-                raise exceptions.APIException("Pickup date cannot be in the past.")
-            elif pickup_date < timezone.now():  # Check if the time is in the future if the date is today
-                raise exceptions.APIException("Pickup time must be later than the current time.")
+                if dropoff_date <= pickup_date:
+                    raise exceptions.APIException("Dropoff date must be after pickup date.")
+                
+                if pickup_date.date() < timezone.now().date():
+                    raise exceptions.APIException("Pickup date cannot be in the past.")
+                elif pickup_date < timezone.now():
+                    raise exceptions.APIException("Pickup time must be later than the current time.")
+
             
             # Validate bike availability
-            bike = data['bike']
-            if bike.isAvailable == False:
-                raise exceptions.APIException(f"Bike {bike.name} is not available for rent.")
+            if 'bike' in data:
+                bike = data['bike']
+                if bike.isAvailable == False and (not instance or instance.bike != bike):
+                    raise exceptions.APIException(f"Bike {bike.name} is not available for rent.")
             
             return data
         except ValueError as e:
@@ -84,3 +88,19 @@ class BikeRentalSerializer(serializers.ModelSerializer):
         bike.save()
         
         return rental
+    
+    def update(self, instance, validated_data):
+        # Update the rental instance with validated data
+        if 'payment_method' in validated_data:
+            payment_method = validated_data.get('payment_method')
+            if payment_method == 'online' and validated_data.get('payment_status') == 'paid':
+                validated_data['rental_status'] = 'active'
+            elif payment_method == 'pickup':
+                validated_data['rental_status'] = 'active'
+        
+        # Update the instance
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        
+        instance.save()
+        return instance
