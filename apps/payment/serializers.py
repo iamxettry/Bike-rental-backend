@@ -23,7 +23,7 @@ class InitiatePaymentSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         user = self.context['request'].user
-        rental_id = attrs.get('rental',None)
+        rental_id = attrs.get('product_id',None)
         total_amount = attrs.get('total_amount')
         amount_paid = attrs.get('amount_paid')
 
