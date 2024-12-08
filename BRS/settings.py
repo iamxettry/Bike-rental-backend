@@ -35,8 +35,8 @@ ALLOWED_HOSTS = []
 # KHALTI_VERIFY_URL = "https://khalti.com/api/v2/payment/verify/"
 # Application definition
 
-ESEWA_SUCCESS_URL = "http://localhost:3000/api/payment/success/"
-ESEWA_FAILURE_URL = "http://localhost:3000/api/payment/failed/"
+ESEWA_SUCCESS_URL = "http://localhost:3000/payment/success/"
+ESEWA_FAILURE_URL = "http://localhost:3000/payment/failed/"
 ESEWA_SCD = "EPAYTEST"  
 ESEWA_TEST_URL = "https://uat.esewa.com.np/epay/main"
 ESEWA_PROD_URL = "https://esewa.com.np/epay/main"
