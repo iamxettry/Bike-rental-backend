@@ -160,7 +160,40 @@ class EsewaPaymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Payment
         fields = ['id', 'total_amount','amount_paid','remaining_amount', 'product_id',  'transaction_id', 'status', 'created_at']
-        read_only_fields = ['status', 'transaction_id', 'created_at']
+        read_only_fields = ['status', 'transaction_id', 'created_at', 'remaining_amount']
+    
+    def validate(self, data):
+        # Validate total_amount
+        if data.get('total_amount', 0) <= 0:
+            raise serializers.ValidationError({
+                "total_amount": "Total amount must be greater than 0"
+            })
+            
+        # Validate amount_paid
+        if data.get('amount_paid', 0) <= 0:
+            raise serializers.ValidationError({
+                "amount_paid": "Amount paid must be greater than 0"
+            })
+            
+        # Validate amount_paid is not greater than total_amount
+        if data.get('amount_paid', 0) > data.get('total_amount', 0):
+            raise serializers.ValidationError({
+                "amount_paid": "Amount paid cannot be greater than total amount"
+            })
+            
+        return data
+
+    def create(self, validated_data):
+        # Calculate remaining amount
+        total_amount = validated_data.get('total_amount')
+        amount_paid = validated_data.get('amount_paid')
+        remaining_amount = total_amount - amount_paid
+        
+        # Add remaining_amount to validated_data
+        validated_data['remaining_amount'] = remaining_amount
+        
+        return super().create(validated_data)
+
 
 class EsewaPaymentRequestSerializer(serializers.Serializer):
     amount = serializers.DecimalField(max_digits=10, decimal_places=2,
@@ -169,20 +202,20 @@ class EsewaPaymentRequestSerializer(serializers.Serializer):
             'blank': 'Amount  cannot be blank.',
             'invalid': 'Amount must be a valid number.'
         })
-    rental_id = serializers.CharField(max_length=100)
+    product_id = serializers.CharField(max_length=100)
 
     def validate(self, attrs):
         request = self.context.get('request')
-        rental_id = attrs.get('rental_id',None)
+        product_id = attrs.get('product_id',None)
         amount= attrs.get('amount', None)
         print("ser", amount)
         try:
-            UUID(str(rental_id))
+            UUID(str(product_id))
         except ValueError:
             raise exceptions.APIException("Invalid BikeRental UUID")
         
         try:
-            order = BikeRental.objects.get(id=rental_id)
+            order = BikeRental.objects.get(id=product_id)
         except BikeRental.DoesNotExist:
             raise exceptions.APIException("BikeRental Not found.")
         if amount <0:
@@ -196,7 +229,7 @@ class EsewaPaymentRequestSerializer(serializers.Serializer):
                 'psc': 0,
                 'pcc': 0,
                 'tAmt': amount,
-                'pid': rental_id,
+                'pid': product_id,
                 'scd': os.environ.get('ESEWA_MERCHANT_ID'),
                 'su': request.build_absolute_uri('/api/payment_success/'),
                 'fu': request.build_absolute_uri('/api/payment_failed/'),

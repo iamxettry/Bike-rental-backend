@@ -59,7 +59,7 @@ class EsewaPaymentViewSet(viewsets.ModelViewSet):
             # Create payment record
             payment = serializer.save(
                 transaction_id=generate_transaction_id(),
-                status='PENDING'
+                status='pending'
             )
             
             # Generate eSewa form data
@@ -69,7 +69,8 @@ class EsewaPaymentViewSet(viewsets.ModelViewSet):
             return Response({
                 'payment_url': esewa_url,
                 'form_data': form_data,
-                'transaction_id': payment.transaction_id
+                'transaction_id': payment.transaction_id,
+                'remaining_amount': payment.remaining_amount
             })
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

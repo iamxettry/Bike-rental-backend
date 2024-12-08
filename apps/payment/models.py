@@ -27,6 +27,12 @@ class Payment(models.Model):
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
     
+    def save(self, *args, **kwargs):
+        # Auto-calculate remaining amount if not set
+        if self.remaining_amount is None:
+            self.remaining_amount = self.total_amount - self.amount_paid
+        super().save(*args, **kwargs)
+        
     def __str__(self):
         return f"Payment {self.id} for Rental {self.rental.id} "
 
