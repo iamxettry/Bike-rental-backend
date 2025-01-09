@@ -7,7 +7,7 @@ from .serializers import *
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView, RetrieveAPIView
-
+from rest_framework.views import APIView
 # Create Location API
 class LocationCreateView(CreateAPIView):
     serializer_class = LocationSerializer
@@ -71,3 +71,28 @@ class LocationSearchView(ListAPIView):
     def get_queryset(self):
         query = self.request.query_params.get('search')
         return Location.objects.filter(city__icontains=query) if query else Location.objects.all()
+
+# Quick Stat View 
+
+class QuickStatsViews(APIView):
+
+    permission_classes = [IsAdminUser, IsAuthenticated]
+    def get(self, request, *args, **kwargs):
+        data = {
+            'total_bikes': Bike.objects.count(),
+            'active_rentals': BikeRental.objects.filter(rental_status='active').count(),
+            'new_users': self.get_new_users(),
+            'todays_revenue': self.get_todays_revenue(),
+        }
+        return Response(data)
+
+    def get_new_users(self):
+        one_month_ago = timezone.now() - timedelta(days=30)
+        return User.objects.filter(date_joined__gte=one_month_ago).count()
+
+    def get_todays_revenue(self):
+        today = timezone.now().date()
+        return BikeRental.objects.filter(pickup_date__date=today).aggregate(
+            total_revenue=Sum('total_amount')
+        )['total_revenue'] or 0
+    
