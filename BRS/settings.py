@@ -113,7 +113,15 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost:3001',  
     'http://localhost:3002',  
     'https://yourfrontenddomain.com',
+     'http://192.168.100.8:3000',
 ]
+
+# to handle dynamically
+# CORS_ORIGIN_REGEX_WHITELIST = [
+#     r'^http://localhost:[0-9]+$',  
+#     r'^http://192\.168\.100\.\d+:3000$',
+#     r'^https://yourfrontenddomain\.com$',
+# ]
 CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOW_HEADERS = [
