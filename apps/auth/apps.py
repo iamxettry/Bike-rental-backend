@@ -6,4 +6,7 @@ class AuthConfig(AppConfig):
     name = 'apps.auth'
     label = 'authentication'
 
-   
+
+    def ready(self):
+        import apps.auth.signals  # Import signals
+        super().ready()  # Call the parent class's ready method

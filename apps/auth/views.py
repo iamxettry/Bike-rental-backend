@@ -8,6 +8,7 @@ from .models import User
 from apps.common.otp import OTPAction, OTPhandlers
 from apps.common.utils import get_tokens_for_user
 from django.utils import timezone
+from apps.common.models import UserActivity
 
 import os
 
@@ -111,6 +112,7 @@ class ResendOtpView(generics.CreateAPIView):
 # User Logout View
 class UserLogOutView(generics.CreateAPIView):
     serializer_class = UserLogOutSerializer
+    permission_classes = [IsAuthenticated]
     def post(self, request):
         refresh_token = request.COOKIES.get('refresh_token')
         if not refresh_token:
@@ -118,6 +120,12 @@ class UserLogOutView(generics.CreateAPIView):
         serializer=self.get_serializer(data={'refresh': refresh_token})
         if serializer.is_valid():
             try:
+                user = request.user
+                UserActivity.objects.create(
+                user=user,
+                activity="logout",
+                timestamp=timezone.now(),
+        )
                 serializer.save()
                 response = Response({'success': 'Logged out successfully.'}, status=status.HTTP_200_OK)
                 response.delete_cookie('access_token')
