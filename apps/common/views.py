@@ -8,6 +8,11 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView, RetrieveAPIView
 from rest_framework.views import APIView
+from .models import *
+from django.db.models.functions import TruncHour
+from django.db.models import Count
+
+from .utils import get_client_ip
 # Create Location API
 class LocationCreateView(CreateAPIView):
     serializer_class = LocationSerializer
@@ -117,3 +122,22 @@ class MonthlyRentalCount(APIView):
                 'rentals': rentals.count()
             })
         return data
+    
+
+
+        
+class HourlyUsagePattern(APIView):
+    def get(self, request, *args, **kwargs):
+        # Aggregate hourly data
+        data = (
+            UserActivity.objects.annotate(hour=TruncHour('timestamp'))
+            .values('hour')
+            .annotate(users=Count('user', distinct=True))
+            .order_by('hour')
+        )
+        # Format data for the chart
+        formatted_data = [
+            {"hour": item["hour"].strftime("%I %p"), "users": item["users"]}
+            for item in data
+        ]
+        return Response(formatted_data)

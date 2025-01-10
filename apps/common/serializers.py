@@ -36,4 +36,7 @@ class QuickStatsSerializer(serializers.Serializer):
             total_revenue=Sum('total_amount')
         )['total_revenue'] or 0
     
-    
+
+class HourlyUsageSerializer(serializers.Serializer):
+    hour = serializers.IntegerField()
+    users = serializers.IntegerField()

@@ -14,7 +14,8 @@ urlpatterns = [
     path('quick-stats/', QuickStatsViews.as_view(), name='quick-stats'),
     # Monthly rentals
     path('monthly-rentals/', MonthlyRentalCount.as_view(), name='monthly-rentals'),
-
+    # Hourly usage
+    path('hourly-usage/', HourlyUsagePattern.as_view(), name='hourly-usage'),
 
 ]
 
