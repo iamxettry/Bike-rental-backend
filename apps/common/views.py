@@ -1,5 +1,5 @@
 from django.shortcuts import render
-
+import calendar
 # Create your views here.
 
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
@@ -113,7 +113,7 @@ class MonthlyRentalCount(APIView):
         for month in range(1, 13):
             rentals = BikeRental.objects.filter(pickup_date__month=month, pickup_date__year=year) 
             data.append({
-                'month': month,
-                'count': rentals.count()
+                'month': calendar.month_abbr[month],
+                'rentals': rentals.count()
             })
         return data
