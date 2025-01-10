@@ -81,7 +81,7 @@ MIDDLEWARE = [
     "apps.common.middleware.TrackUserVisitMiddleware",
     "apps.common.middleware.TrackAnonymousVisitMiddleware",
 ]
-
+MIDDLEWARE.insert(0, 'corsheaders.middleware.CorsMiddleware')
 
 PASSWORD_HASHERS = [
     'apps.auth.utils.CustomSHA512PasswordHasher',
@@ -99,7 +99,7 @@ REST_FRAMEWORK  ={
 
    'DEFAULT_AUTHENTICATION_CLASSES': [
        'rest_framework.authentication.SessionAuthentication',
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'apps.auth.authentication.CustomJWTAuthentication',
      ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
     "PAGE_SIZE": 10,
@@ -240,6 +240,11 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+# Session configuration
+# SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'  # or 'db' if you use database-backed sessions
+SESSION_COOKIE_NAME = 'sessionid'
+# SESSION_COOKIE_SECURE = False  # Set to True if you're using HTTPS
+SESSION_COOKIE_DOMAIN = 'localhost'
 
 
 EMAIL_BACKEND="django.core.mail.backends.smtp.EmailBackend"
