@@ -95,4 +95,25 @@ class QuickStatsViews(APIView):
         return BikeRental.objects.filter(pickup_date__date=today).aggregate(
             total_revenue=Sum('total_amount')
         )['total_revenue'] or 0
-    
+
+
+# Get monthly rental count
+class MonthlyRentalCount(APIView):
+    permission_classes = [IsAdminUser, IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        data = self.get_monthly_rental_count()
+        return Response(data)
+
+    def get_monthly_rental_count(self):
+        # Get year wise rental count
+        year = self.request.query_params.get('year', timezone.now().year)
+
+        data = []
+        for month in range(1, 13):
+            rentals = BikeRental.objects.filter(pickup_date__month=month, pickup_date__year=year) 
+            data.append({
+                'month': month,
+                'count': rentals.count()
+            })
+        return data

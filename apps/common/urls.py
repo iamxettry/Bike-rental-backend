@@ -12,6 +12,8 @@ urlpatterns = [
 
     # Quick Stats 
     path('quick-stats/', QuickStatsViews.as_view(), name='quick-stats'),
+    # Monthly rentals
+    path('monthly-rentals/', MonthlyRentalCount.as_view(), name='monthly-rentals'),
 
 
 ]
