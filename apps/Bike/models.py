@@ -7,7 +7,12 @@ START_CHOICES = (
     ('KICK_AND_SELF_START', 'Kick & Self Start'),
     ('KICK_START_ONLY', 'Kick Start Only'),
 )
-
+STATUS_CHOICES = (
+    ('AVAILABLE', 'Available'),
+    ('MAINTENANCE', 'Maintenance'),
+    ('IN_USE', 'In Use'),
+    ('RESERVED', 'Reserved'),
+)
 
 class Features(models.Model):
     start = models.CharField(max_length=100, choices=START_CHOICES, default='SELF START ONLY') 
@@ -34,6 +39,9 @@ class Bike(models.Model):
     image = models.ImageField(upload_to='images/bikes', null=True, blank=True)
     date = models.DateTimeField(auto_now_add=True)
     locations = models.ManyToManyField(Location, related_name="bikes")
+
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='AVAILABLE')
+    
     def __str__(self):
         return self.name
     def average_rating(self):
