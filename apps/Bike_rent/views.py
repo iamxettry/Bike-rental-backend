@@ -72,7 +72,7 @@ class BikeRentalViewSet(viewsets.ModelViewSet):
             
             # Make bike available again
             bike = rental.bike
-            bike.condition = 'available'
+            bike.status = 'available'
             bike.save()
             
             return Response(
@@ -84,6 +84,20 @@ class BikeRentalViewSet(viewsets.ModelViewSet):
                 {"error": "Cannot cancel an ongoing rental. Please contact support."},
                 status=status.HTTP_400_BAD_REQUEST
             )
+    
+    @action(detail=True, methods=['post'])
+    def reserve_bike(self, request, pk=None):
+        rental = self.get_object()
+        bike = rental.bike
+        
+        if bike.status == 'available':
+            bike.status = 'reserved'
+            bike.save()
+            rental.rental_status = 'pending'
+            rental.save()
+            return Response({"message": "Bike reserved successfully."}, status=status.HTTP_200_OK)
+        
+        return Response({"error": "Bike is not available for reservation."}, status=status.HTTP_400_BAD_REQUEST)
     
     @action(detail=False, methods=['get'])
     def active_rentals(self, request):
