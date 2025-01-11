@@ -45,7 +45,7 @@ class BikeRentalSerializer(serializers.ModelSerializer):
             # Validate bike availability
             if 'bike' in data:
                 bike = data['bike']
-                if bike.status not in ['available', 'reserved']:
+                if bike.status not in ['AVAILABLE', 'RESERVED']:
                     raise exceptions.APIException(f"Bike {bike.name} is not available for rent.")
             
             return data
