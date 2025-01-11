@@ -262,3 +262,68 @@ class LoginAdminView(generics.CreateAPIView):
                     
                      },status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+# User Dashboard api
+class UserDashboardView(APIView):
+    # permission_classes = [IsAuthenticated, IsAdminUser]
+    def get(self, request):
+        data={
+            "total_users":{
+                "title":"Total Users",
+                "value":self.get_Total_users(),
+                "change":self.get_Total_users_increase()
+            },
+            "verified_users":
+            {
+                "title":"Verified Users",
+                "value":self.get_Verified_users(),
+                "change":self.get_Verified_users_percentage()
+            },
+            "staff_users":
+            {
+                "title":"Staff Users",
+                "value":self.getStaff_users(),
+                "change":self.getStaff_user_increase()
+            },
+            "pending_verification":
+            {
+                "title":"Pending Verification",
+                "value":self.getPending_Verification(),
+                "change":-self.get_Verified_User_This_month()
+            }
+        }
+        return Response({'success':'User Dashboard.', "data":data}, status=status.HTTP_200_OK)
+    
+    def get_Total_users(self):
+        return User.objects.all().count()
+    
+    # get total user increase this month
+    def get_Total_users_increase(self):
+        return User.objects.filter(date_joined__month=timezone.now().month).count()
+    
+    def get_Verified_users(self):
+        return User.objects.filter(email_verified=True).count()
+    
+    # get Verified users  %
+    def get_Verified_users_percentage(self):
+        total_users = self.get_Total_users()
+        if total_users == 0:  # Avoid division by zero
+            return 0
+        return (self.get_Verified_users() / total_users) * 100
+    
+    def getStaff_users(self):
+        return User.objects.filter(is_staff=True).count()
+    
+    # staff increase this month
+    def getStaff_user_increase(self):
+        return User.objects.filter(date_joined__month=timezone.now().month, is_staff=True).count()
+    
+    def getPending_Verification(self):
+        return User.objects.filter(email_verified=False).count()
+    
+    # verified this month
+    def get_Verified_User_This_month(self):
+        return User.objects.filter(email_verified_date__month=timezone.now().month,email_verified=True).count()
+
+    

@@ -45,6 +45,7 @@ class User(AbstractBaseUser,PermissionsMixin):
     otp_created_at = models.DateTimeField(blank=True, null=True)
     otp_tries = models.PositiveIntegerField(default=0)
     email_verified = models.BooleanField(default=False)
+    email_verified_date=models.DateTimeField(blank=True, null=True)
     date_joined = models.DateTimeField(default=timezone.now)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)

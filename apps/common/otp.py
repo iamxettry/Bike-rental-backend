@@ -57,6 +57,7 @@ class OTPhandlers:
         self.user.otp_created_at = None
         if self.action == OTPAction.LOGIN:
             self.user.email_verified = True
+            self.user.email_verified_date = timezone.now()
         self.user.save()
         return True, "OTP Verified"
         

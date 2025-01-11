@@ -16,4 +16,5 @@ urlpatterns = [
 
     # admin
     path('login/admin/', LoginAdminView.as_view(), name="Login-admin" ),
+    path('user-dashboard/', UserDashboardView.as_view(), name="user-dashboard" ),
 ]

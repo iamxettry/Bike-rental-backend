@@ -331,3 +331,13 @@ class LoginAdminSerializers(serializers.ModelSerializer):
                 raise exceptions.APIException("User doesnot exists")
         else:
             raise exceptions.APIException("Invalid Credentials!")
+
+
+class UserStatsSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=100)
+    totalUsers = serializers.IntegerField()
+    verifiedUsers = serializers.IntegerField()
+
+class UserTypeSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=100)
+    value = serializers.IntegerField()
