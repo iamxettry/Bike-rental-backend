@@ -128,9 +128,12 @@ class MonthlyRentalCount(APIView):
         
 class HourlyUsagePattern(APIView):
     def get(self, request, *args, **kwargs):
+        start_of_today = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        end_of_today = start_of_today + timedelta(days=1)
         # Aggregate hourly data
         data = (
-            UserActivity.objects.annotate(hour=TruncHour('timestamp'))
+            UserActivity.objects.filter(timestamp__gte=start_of_today, timestamp__lt=end_of_today)
+            .annotate(hour=TruncHour('timestamp'))
             .values('hour')
             .annotate(users=Count('user', distinct=True))
             .order_by('hour')
