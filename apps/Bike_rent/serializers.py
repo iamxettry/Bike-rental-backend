@@ -85,7 +85,7 @@ class BikeRentalSerializer(serializers.ModelSerializer):
         # Update bike availability
         bike = validated_data['bike']
         bike.isAvailable = False
-        bike.status = 'in_use'
+        bike.status = 'IN_USE'
         bike.save()
         
         return rental
