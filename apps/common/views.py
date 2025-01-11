@@ -182,17 +182,42 @@ class MonthlyRevenueRentalCount(APIView):
 class WeaklyUserCount(APIView):
     permission_classes=[IsAuthenticated, IsAdminUser]
 
-    def get(self,request,*args, **kwargs):
-        
+    def get(self, request, *args, **kwargs):
+        year = int(self.request.query_params.get('year', timezone.now().year))
+        week_number = int(self.request.query_params.get('week', timezone.now().isocalendar()[1]))
 
-        return
+        # Fetch weekly active user data
+        data = self.get_weekly_active_users(year, week_number)
+        return Response(data)
 
-    def get_weekly_active_users(self,request):
-        year = self.request.query_params.get('year', timezone.now().year)
+    def get_weekly_active_users(self, year, week_number):
+        """
+        Generates user activity data for the given year and week number.
+        """
+        # Initialize an array for weekly data
+        data = []
 
-        data=[]
-        for day in range(1,8):
-            user= User.objects.filter()
+        # Calculate the start date of the week
+        start_date = timezone.now().replace(year=year, hour=0, minute=0, second=0, microsecond=0)
+        start_date -= timedelta(days=start_date.weekday())  # Adjust to the beginning of the week
+        start_date += timedelta(weeks=week_number - timezone.now().isocalendar()[1])
+
+        # Loop through each day of the week
+        for day in range(7):
+            date = start_date + timedelta(days=day)
+
+            # Count active and new users for the specific day
+            active_users = User.objects.filter(last_login__date=date.date()).count()
+            new_users = User.objects.filter(date_joined__date=date.date()).count()
+
+            # Append the data
+            data.append({
+                'name': date.strftime('%a'),  # Short day name (e.g., Mon, Tue)
+                'active': active_users,
+                'new': new_users,
+            })
+
+        return data
 
 # Payment Method used stats
 class PaymentMethodsStatsGraph(APIView):

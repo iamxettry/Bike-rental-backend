@@ -20,7 +20,8 @@ urlpatterns = [
     path('bike-status/', BikeDistributionStatus.as_view(), name='bike-status'),
     # Monthly Revenue with rentals
     path('monthly-revenue-rentals/', MonthlyRevenueRentalCount.as_view(), name='monthly-revenue'),
-
+    # user activity 
+    path('user-activity/', WeaklyUserCount.as_view(), name='user-activity'),
     # Payment methods used stautus
     path('payment-methods-stats/', PaymentMethodsStatsGraph.as_view(), name='payment-stats')
 
