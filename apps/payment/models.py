@@ -10,6 +10,13 @@ class Payment(models.Model):
         ('SUCCESS', 'Success'),
         ('FAILED', 'Failed'),
     )
+    PAYMENT_METHOD_USED = [
+        ('credit_card', 'Credit Card'),
+        ('debit_card', 'Debit Card'),
+        ('esewa', 'E-Sewa'),
+        ('khalti', 'Khalti'),
+        ('cash', 'Cash')
+    ]
     
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -19,6 +26,9 @@ class Payment(models.Model):
     amount_paid = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     remaining_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     payment_date = models.DateTimeField(auto_now_add=True)
+
+    payment_via = models.CharField(max_length=20, choices=PAYMENT_METHOD_USED, default='cash')
+
     
     # Optional fields for transaction reference or payment details
     transaction_id = models.CharField(max_length=255, null=True, blank=True,unique=True)

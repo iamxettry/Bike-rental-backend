@@ -21,5 +21,8 @@ urlpatterns = [
     # Monthly Revenue with rentals
     path('monthly-revenue-rentals/', MonthlyRevenueRentalCount.as_view(), name='monthly-revenue'),
 
+    # Payment methods used stautus
+    path('payment-methods-stats/', PaymentMethodsStatsGraph.as_view(), name='payment-stats')
+
 ]
 

@@ -178,3 +178,26 @@ class MonthlyRevenueRentalCount(APIView):
             })
         return data
     
+# Get active user and new user daily for weeks
+class WeaklyUserCount(APIView):
+    permission_classes=[IsAuthenticated, IsAdminUser]
+
+    def get(self,request,*args, **kwargs):
+        
+
+        return
+
+    def get_weekly_active_users(self,request):
+        year = self.request.query_params.get('year', timezone.now().year)
+
+        data=[]
+        for day in range(1,8):
+            user= User.objects.filter()
+
+# Payment Method used stats
+class PaymentMethodsStatsGraph(APIView):
+
+    def get(self, request, *args, **kwargs):
+        
+        
+        return Response("Hello")

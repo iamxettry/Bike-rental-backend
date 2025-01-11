@@ -14,6 +14,7 @@ from .models import BikeRental
 from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+from apps.payment.models import Payment
 # Create your views here.
 
 # Views to search Bike on locations
@@ -133,12 +134,25 @@ class BikeRentUpdateView(APIView):
             )
 
             if serializer.is_valid(raise_exception=True):
-                serializer.save()
+                payment = Payment.objects.create(
+                    user=request.user,
+                    product_id=rental,
+                    total_amount=rental.total_amount,
+                    amount_paid=0.0,  # Assuming initial amount paid is 0 for cash payments
+                    remaining_amount=rental.total_amount,
+                    payment_via="cash"
+                )
+                serializer.save(payment_method="pickup", payment_status="pending", rental_status="active")
                 return Response(
                     {
                         "message": "Confirmed Payment at Pickup",
-                        "data": serializer.data,
-                        "status": True  
+                        "payment_details": {
+                            "id": payment.id,
+                            "status": payment.status,
+                            "payment_method": payment.payment_via,
+                        },
+                        "rental_data": serializer.data,
+                        "status": True
                     },
                     status=status.HTTP_200_OK
                 )
