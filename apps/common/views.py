@@ -144,3 +144,16 @@ class HourlyUsagePattern(APIView):
             for item in data
         ]
         return Response(formatted_data)
+
+
+# Bike Distribution Statsus
+class BikeDistributionStatus(APIView):
+    def get(self, request, *args, **kwargs):
+        data = {
+            'total_bikes': Bike.objects.count(),
+            'available_bikes': Bike.objects.filter(status='AVAILABLE').count(),
+            'reserved_bikes': Bike.objects.filter(status='RESERVED').count(),
+            'under_maintenance': Bike.objects.filter(status='MAINTENANCE').count(),
+            'in_use': Bike.objects.filter(status='IN_USE').count(),
+        }
+        return Response(data)

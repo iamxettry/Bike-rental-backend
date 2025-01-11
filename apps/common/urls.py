@@ -16,6 +16,8 @@ urlpatterns = [
     path('monthly-rentals/', MonthlyRentalCount.as_view(), name='monthly-rentals'),
     # Hourly usage
     path('hourly-usage/', HourlyUsagePattern.as_view(), name='hourly-usage'),
+    # Bike Status
+    path('bike-status/', BikeDistributionStatus.as_view(), name='bike-status'),
 
 ]
 
