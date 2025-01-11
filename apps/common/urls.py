@@ -18,6 +18,8 @@ urlpatterns = [
     path('hourly-usage/', HourlyUsagePattern.as_view(), name='hourly-usage'),
     # Bike Status
     path('bike-status/', BikeDistributionStatus.as_view(), name='bike-status'),
+    # Monthly Revenue with rentals
+    path('monthly-revenue-rentals/', MonthlyRevenueRentalCount.as_view(), name='monthly-revenue'),
 
 ]
 

@@ -156,3 +156,25 @@ class BikeDistributionStatus(APIView):
             {"name": "Reserved", "value": Bike.objects.filter(status="RESERVED").count()},
         ]
         return Response(bike_status)
+
+# Get Monthly wise revenue and rental count
+class MonthlyRevenueRentalCount(APIView):
+    def get(self, request, *args, **kwargs):
+        data = self.get_monthly_revenue_rental_count()
+        return Response(data)
+
+    def get_monthly_revenue_rental_count(self):
+        # Get year wise rental count
+        year = self.request.query_params.get('year', timezone.now().year)
+
+        data = []
+        for month in range(1, 13):
+            rentals = BikeRental.objects.filter(pickup_date__month=month, pickup_date__year=year)
+            revenue = rentals.aggregate(total_revenue=Sum('total_amount'))['total_revenue'] or 0
+            data.append({
+                'month': calendar.month_abbr[month],
+                'rentals': rentals.count(),
+                'revenue': revenue
+            })
+        return data
+    
