@@ -11,7 +11,7 @@ from rest_framework.views import APIView
 from .models import *
 from django.db.models.functions import TruncHour
 from django.db.models import Count
-
+from apps.payment.models import Payment
 from .utils import get_client_ip
 # Create Location API
 class LocationCreateView(CreateAPIView):
@@ -198,6 +198,32 @@ class WeaklyUserCount(APIView):
 class PaymentMethodsStatsGraph(APIView):
 
     def get(self, request, *args, **kwargs):
+        data = self.get_payment_methods_stats()
         
-        
-        return Response("Hello")
+        return Response(data)
+    
+    def get_payment_methods_stats(self):
+        # Initialize counts for each payment method category
+        stats = {
+            'Credit Card': 0,
+            'Debit Card': 0,
+            'Digital Wallet': 0,
+            'Cash': 0
+        }
+
+        # Aggregate payment counts
+        for method, _ in Payment.PAYMENT_METHOD_USED:
+            count = Payment.objects.filter(payment_via=method).count()
+
+            if method == 'credit_card':
+                stats['Credit Card'] += count
+            elif method == 'debit_card':
+                stats['Debit Card'] += count
+            elif method in ['esewa', 'khalti']:
+                stats['Digital Wallet'] += count
+            elif method == 'cash':
+                stats['Cash'] += count
+
+        # Convert stats dictionary to list of dictionaries
+        data = [{'name': key, 'value': value} for key, value in stats.items()]
+        return data
