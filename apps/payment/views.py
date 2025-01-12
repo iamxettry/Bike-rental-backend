@@ -2,17 +2,19 @@ from rest_framework import generics,status ,exceptions
 from rest_framework.response import Response
 from rest_framework import viewsets
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import action
-from .serializers import InitiatePaymentSerializer,VerifyPaymentSerializer,EsewaPaymentRequestSerializer,EsewaPaymentNotificationSerializer, EsewaPaymentSerializer
+from .serializers import InitiatePaymentSerializer,VerifyPaymentSerializer,EsewaPaymentRequestSerializer,EsewaPaymentNotificationSerializer, EsewaPaymentSerializer, PaymentSerializer
 from .models import Payment
 from .utils import generate_transaction_id, get_esewa_url, generate_esewa_form_data
 import requests
 from django.conf import settings
 from apps.Bike_rent.models import BikeRental
-
+import calendar
+from django.utils import timezone
 from uuid import UUID
+from django.db.models import Sum
 
 import re
 
@@ -208,3 +210,64 @@ class PaymentNotificationView(APIView):
                 # Handle failed payment
                 return Response({'message': 'Payment failed'}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# Payment Quick stats
+class PaymentStatsView(APIView):
+    permission_classes = [IsAuthenticated, IsAdminUser]
+    def get(self, request):
+        total_payments = Payment.objects.count()
+        pending_payments = Payment.objects.filter(status='PENDING').count()
+        successful_payments = Payment.objects.filter(status='SUCCESS').count()
+        failed_payments = Payment.objects.filter(status='FAILED').count()
+        return Response({
+            'total_payments': total_payments,
+            'pending_payments': pending_payments,
+            'successful_payments': successful_payments,
+            'failed_payments': failed_payments,
+        }, status=status
+        .HTTP_200_OK)
+    
+
+# Graph to show monthly payment stats
+class MonthlyPaymentStatsView(APIView):
+    permission_classes = [IsAuthenticated, IsAdminUser]
+    def get(self, request, *args, **kwargs):
+        data = self.get_monthly_revenue_rental_count()
+        return Response(data, status=status.HTTP_200_OK)
+
+    def get_monthly_revenue_rental_count(self):
+        # Get year wise rental count
+        year = self.request.query_params.get('year', timezone.now().year)
+        status_filter = self.request.query_params.get('status', 'paid')
+        data = []
+        for month in range(1, 13):
+            rentals = BikeRental.objects.filter(pickup_date__month=month,payment_status=status_filter , pickup_date__year=year)
+            amount = rentals.aggregate(total_revenue=Sum('total_amount'))['total_revenue'] or 0
+            data.append({
+                'month': calendar.month_abbr[month],
+                'rentals': rentals.count(),
+                'amount': amount
+            })
+        return data
+      
+
+# Get payment list 
+class PaymentListView(generics.ListAPIView):
+    queryset = Payment.objects.all()
+    serializer_class = PaymentSerializer
+    permission_classes = [IsAuthenticated, IsAdminUser]
+    def get_queryset(self):
+        status = self.request.query_params.get('status')
+        if status:
+            return Payment.objects.filter(status=status)
+        return Payment.objects.all()
+    
+    def get(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    
+        
+        

@@ -6,6 +6,7 @@ import os
 import requests
 from uuid import UUID
 from .models import Payment
+from apps.Bike_rent.serializers import BikeRentalSerializer
 class InitiatePaymentSerializer(serializers.ModelSerializer):
  
     # return_url = serializers.URLField(required=True,
@@ -252,3 +253,16 @@ class EsewaPaymentNotificationSerializer(serializers.Serializer):
     txn_id = serializers.CharField(max_length=100)
     status = serializers.CharField(max_length=20)
     rental_id = serializers.CharField(max_length=100)
+
+
+# Paymenet Serializer 
+class PaymentSerializer(serializers.ModelSerializer):
+    product = BikeRentalSerializer(source='product_id', read_only=True)
+    class Meta:
+        model = Payment
+        fields = ['id', 'total_amount', 'payment_date', 'amount_paid', 'remaining_amount', 'product', 'transaction_id', 'status', 'created_at']
+        read_only_fields = ['status', 'transaction_id', 'created_at', 'remaining_amount']
+    
+   
+
+    
