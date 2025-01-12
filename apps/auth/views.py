@@ -10,7 +10,7 @@ from apps.common.utils import get_tokens_for_user
 from django.utils import timezone
 from apps.common.models import UserActivity
 from django.utils.timezone import now, timedelta
-
+import calendar
 import os
 
 is_production = os.getenv('DJANGO_ENV') == 'production'
@@ -333,4 +333,26 @@ class UserDashboardView(APIView):
             email_verified=True
         ).count()
 
+# User growth graph api with total user and verified users
+class UserGrowthGraphView(APIView):
+    permission_classes = [IsAuthenticated, IsAdminUser]
+    def get(self, request):
+        data = {
+            "users": self.get_users(),
+        }
+        return Response({'success': 'User growth graph.', "data": data}, status=status.HTTP_200_OK)
+    
+    def get_users(self):
+        data = []
+        for month in range(1, 13):
+            users = User.objects.filter(date_joined__month=month)
+            verified_users = User.objects.filter(email_verified_date__month=month, email_verified=True)
+            data.append({
+                'month': calendar.month_abbr[month],
+                'totalUsers': users.count(),
+                'verifiedUsers': verified_users.count()
+                
+
+            })
+        return data
     
