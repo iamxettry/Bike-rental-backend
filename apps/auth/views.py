@@ -1,4 +1,6 @@
 from rest_framework.views import APIView
+from rest_framework import viewsets
+from django.contrib.auth.models import Group, Permission
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import status,permissions
@@ -371,3 +373,17 @@ class SearchUserView(generics.ListAPIView):
                 Q(username__icontains=query)
             )
         return User.objects.all()
+
+class PermissionViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Permission.objects.all()
+    serializer_class = PermissionSerializer
+    permission_classes = [permissions.IsAdminUser]  # Restrict to admins
+
+class GroupViewSet(viewsets.ModelViewSet):
+    queryset = Group.objects.all()
+    permission_classes = [permissions.IsAdminUser]
+    
+    def get_serializer_class(self):
+        if self.action in ['create', 'update', 'partial_update']:
+            return GroupCreateUpdateSerializer
+        return GroupSerializer

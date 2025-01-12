@@ -4,6 +4,7 @@ from .utils import generate_userName, CustomPasswordValidator
 from django.contrib.auth.hashers import make_password
 from apps.common.otp import OTPhandlers, OTPAction
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth.models import Group, Permission
 # user register serialzers 
 class RegisterSerializers(serializers.ModelSerializer):
     first_name=serializers.CharField(error_messages={'required':'Fist Name is required', 'blank':'First name cannot not be blank.'})
@@ -333,11 +334,21 @@ class LoginAdminSerializers(serializers.ModelSerializer):
             raise exceptions.APIException("Invalid Credentials!")
 
 
-class UserStatsSerializer(serializers.Serializer):
-    name = serializers.CharField(max_length=100)
-    totalUsers = serializers.IntegerField()
-    verifiedUsers = serializers.IntegerField()
 
-class UserTypeSerializer(serializers.Serializer):
-    name = serializers.CharField(max_length=100)
-    value = serializers.IntegerField()
+
+class PermissionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Permission
+        fields = ['id', 'name', 'codename', 'content_type']
+
+class GroupSerializer(serializers.ModelSerializer):
+    permissions = PermissionSerializer(many=True)
+
+    class Meta:
+        model = Group
+        fields = ['id', 'name', 'permissions']
+
+class GroupCreateUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Group
+        fields = ['name', 'permissions']

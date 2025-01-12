@@ -1,5 +1,11 @@
-from django.urls import path
+from django.urls import path, include
 from .views import *
+from rest_framework.routers import DefaultRouter
+
+router = DefaultRouter()
+router.register(r'roles', GroupViewSet, basename='role')
+router.register(r'permissions', PermissionViewSet, basename='permission')
+
 urlpatterns = [
     path('register/user/', RegisterUserView.as_view(), name="Register-user" ),
     path('login/user/', LoginUserView.as_view(), name="Login-user" ),
@@ -19,4 +25,6 @@ urlpatterns = [
     path('user-dashboard/', UserDashboardView.as_view(), name="user-dashboard" ),
     path('user-growth-grpah/', UserGrowthGraphView.as_view(), name="user-growth-graph" ),
     path('user-search/', SearchUserView.as_view(), name="user-search" ),
+
+    path('', include(router.urls)),
 ]
