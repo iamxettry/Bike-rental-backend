@@ -9,6 +9,7 @@ from apps.common.otp import OTPAction, OTPhandlers
 from apps.common.utils import get_tokens_for_user
 from django.utils import timezone
 from apps.common.models import UserActivity
+from django.utils.timezone import now, timedelta
 
 import os
 
@@ -266,7 +267,7 @@ class LoginAdminView(generics.CreateAPIView):
 
 # User Dashboard api
 class UserDashboardView(APIView):
-    # permission_classes = [IsAuthenticated, IsAdminUser]
+    permission_classes = [IsAuthenticated, IsAdminUser]
     def get(self, request):
         data={
             "total_users":{
@@ -290,7 +291,7 @@ class UserDashboardView(APIView):
             {
                 "title":"Pending Verification",
                 "value":self.getPending_Verification(),
-                "change":-self.get_Verified_User_This_month()
+                "change":-self.get_Verified_User_This_Week()
             }
         }
         return Response({'success':'User Dashboard.', "data":data}, status=status.HTTP_200_OK)
@@ -323,7 +324,13 @@ class UserDashboardView(APIView):
         return User.objects.filter(email_verified=False).count()
     
     # verified this month
-    def get_Verified_User_This_month(self):
-        return User.objects.filter(email_verified_date__month=timezone.now().month,email_verified=True).count()
+    def get_Verified_User_This_Week(self):
+        today = now().date()
+        start_of_week = today - timedelta(days=today.weekday())  # Monday of the current week
+        end_of_week = start_of_week + timedelta(days=6)  # Sunday of the current week
+        return User.objects.filter(
+            email_verified_date__date__range=(start_of_week, end_of_week),
+            email_verified=True
+        ).count()
 
     
