@@ -11,6 +11,7 @@ from django.utils import timezone
 from apps.common.models import UserActivity
 from django.utils.timezone import now, timedelta
 import calendar
+from django.db.models import Q
 import os
 
 is_production = os.getenv('DJANGO_ENV') == 'production'
@@ -356,3 +357,17 @@ class UserGrowthGraphView(APIView):
             })
         return data
     
+# Search user view
+class SearchUserView(generics.ListAPIView):
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated, IsAdminUser]
+    def get_queryset(self):
+        query = self.request.GET.get('search')  # Get the search query and strip whitespace
+        if query:  # Check if search is not empty
+            return User.objects.filter(
+                Q(first_name__icontains=query) |
+                Q(last_name__icontains=query) |
+                Q(email__icontains=query) |
+                Q(username__icontains=query)
+            )
+        return User.objects.all()
