@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from rest_framework import status, viewsets
+from rest_framework import status,generics, permissions, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
@@ -15,6 +15,8 @@ from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from apps.payment.models import Payment
+from rest_framework.filters import SearchFilter
+from django.db.models import Q
 # Create your views here.
 
 # Views to search Bike on locations
@@ -167,3 +169,44 @@ class BikeRentUpdateView(APIView):
                 {"error": str(e)},
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+class BikeRentalListView(generics.ListAPIView):
+    serializer_class = BikeRentalSerializer
+    # permission_classes = [IsAuthenticated]
+    filter_backends = [SearchFilter]
+    search_fields = ['id', 'user__username', 'user__email', 'bike__name']
+
+    def get_queryset(self):
+        # Retrieve query parameters
+        rental_filter = self.request.query_params.get('rental', 'all')
+        rental_status = self.request.query_params.get('rental_status', None)
+        payment_status = self.request.query_params.get('payment_status', None)
+        search_query = self.request.query_params.get('search', None)
+
+        # Base queryset
+        queryset = BikeRental.objects.all()
+
+        # Filter by rental type
+        if rental_filter == 'active':
+            queryset = queryset.filter(rental_status='active')
+        elif rental_filter == 'history':
+            queryset = queryset.filter(rental_status__in=['completed', 'cancelled'])
+
+        # Filter by rental_status
+        if rental_status:
+            queryset = queryset.filter(rental_status=rental_status)
+
+        # Filter by payment_status
+        if payment_status:
+            queryset = queryset.filter(payment_status=payment_status)
+
+        # Apply search filter
+        if search_query:
+            queryset = queryset.filter(
+                Q(id__icontains=search_query) |
+                Q(user__username__icontains=search_query) |
+                Q(user__email__icontains=search_query) |
+                Q(bike__name__icontains=search_query)
+            )
+
+        return queryset

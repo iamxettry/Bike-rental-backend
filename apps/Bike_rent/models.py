@@ -49,13 +49,16 @@ class BikeRental(models.Model):
     payment_date = models.DateTimeField(null=True, blank=True)
     
     def clean(self):
-        # Validation to ensure dropoff date is after pickup date
-        if self.dropoff_date <= self.pickup_date:
-            raise ValidationError("Dropoff date must be after pickup date")
+        if self.rental_status == 'completed' and self.payment_status != 'paid':
+            raise ValidationError("Rental cannot be marked as completed without payment.")
+    #     # Validation to ensure dropoff date is after pickup date
+    #     if self.dropoff_date <= self.pickup_date:
+    #         raise ValidationError("Dropoff date must be after pickup date")
         
-        # Validation to ensure pickup date is not in the past
-        if self.pickup_date < timezone.now():
-            raise ValidationError("Pickup date cannot be in the past")
+    #     # Validation to ensure pickup date is not in the past
+    #     if not self.pk:  # If the object does not have a primary key, it's being created
+    #         if self.pickup_date < timezone.now():
+    #             raise ValidationError("Pickup date cannot be in the past.")
     
     def calculate_total_amount(self):
         """Calculate the total rental amount based on duration and bike category rate"""
@@ -68,12 +71,15 @@ class BikeRental(models.Model):
             self.total_amount = self.calculate_total_amount()
         
         # Update bike status
-        if self.payment_status == 'paid' or (
-            self.payment_method == 'pickup' and self.payment_status != 'failed'
+        if not self.rental_status or self.rental_status in ['pending', 'active']:
+            if self.payment_status == 'paid' or (
+             self.payment_method == 'pickup' and self.payment_status != 'failed'
         ):
-            self.rental_status = 'active'
-        elif self.rental_status in ['completed', 'cancelled']:
-            self.bike.condition = 'available'
+                self.rental_status = 'active'
+    
+    # If rental is completed or cancelled, update bike condition
+        if self.rental_status in ['completed', 'cancelled']:
+             self.bike.status = 'AVAILABLE'
         
         self.bike.save()
         super().save(*args, **kwargs)
