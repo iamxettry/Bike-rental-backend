@@ -314,7 +314,7 @@ class UserDashboardView(APIView):
         total_users = self.get_Total_users()
         if total_users == 0:  # Avoid division by zero
             return 0
-        return (self.get_Verified_users() / total_users) * 100
+        return round((self.get_Verified_users() / total_users) * 100, 2)
     
     def getStaff_users(self):
         return User.objects.filter(is_staff=True).count()
