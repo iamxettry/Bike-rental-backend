@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework import status,generics, permissions, viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -250,3 +250,22 @@ class BikeRentalListView(generics.ListAPIView):
             )
 
         return queryset
+
+# bike rental quick stats
+class BikeRentalStatsView(APIView):
+    permission_classes = [IsAuthenticated, IsAdminUser]
+    def get(self, request):
+        total_rentals = BikeRental.objects.count()
+        active_rentals = BikeRental.objects.filter(rental_status='active').count()
+        pending_rentals = BikeRental.objects.filter(rental_status='pending').count()
+        completed_rentals = BikeRental.objects.filter(rental_status='completed').count()
+        cancelled_rentals = BikeRental.objects.filter(rental_status='cancelled').count()
+        overdue = BikeRental.objects.filter(rental_status='overdue').count()
+        return Response({
+            "total_rentals": total_rentals,
+            "active_rentals": active_rentals,
+            "pending_rentals": pending_rentals,
+            "completed_rentals": completed_rentals,
+            "cancelled_rentals": cancelled_rentals,
+            "overdue_rentals": overdue
+        }, status=status.HTTP_200_OK)

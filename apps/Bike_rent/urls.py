@@ -12,5 +12,6 @@ urlpatterns = [
     path('bike/update/<uuid:pk>/', BikeRentUpdateView.as_view(), name='bike-update' ),
     path('bike/admin/update/<uuid:pk>/', BikeRentAdminUpdateView.as_view(), name='bike-admin-update' ),
     path('rentals/', BikeRentalListView.as_view(), name='rental-list'),
+    path('rentals-stats/', BikeRentalStatsView.as_view(), name='rental-stats'),
 ]
 

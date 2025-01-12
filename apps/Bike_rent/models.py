@@ -70,12 +70,12 @@ class BikeRental(models.Model):
         if not self.total_amount:
             self.total_amount = self.calculate_total_amount()
         
-        # Update bike status
-        if not self.rental_status or self.rental_status in ['pending', 'active']:
-            if self.payment_status == 'paid' or (
-             self.payment_method == 'pickup' and self.payment_status != 'failed'
-        ):
-                self.rental_status = 'active'
+        # # Update bike status
+        # if not self.rental_status or self.rental_status in ['pending', 'active']:
+        #     if self.payment_status == 'paid' or (
+        #      self.payment_method == 'pickup' and self.payment_status != 'failed'
+        # ):
+        #         self.rental_status = 'active'
     
     # If rental is completed or cancelled, update bike condition
         if self.rental_status in ['completed', 'cancelled']:
