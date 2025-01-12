@@ -121,7 +121,7 @@ class BikeRentUpdateView(APIView):
             rental = BikeRental.objects.get(id=pk)
             
             # Check if user is authorized to update this rental
-            if rental.user != request.user:
+            if rental.user != request.user and not request.user.is_superuser:
                 return Response(
                     {"error": "You are not authorized to update this rental"},
                     status=status.HTTP_403_FORBIDDEN
@@ -155,6 +155,46 @@ class BikeRentUpdateView(APIView):
                         },
                         "rental_data": serializer.data,
                         "status": True
+                    },
+                    status=status.HTTP_200_OK
+                )
+
+        except BikeRental.DoesNotExist:
+            return Response(
+                {"error": "Rental not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+@method_decorator(csrf_exempt, name='dispatch')
+class BikeRentAdminUpdateView(APIView):
+    serializer_class = BikeRentalSerializer
+    permission_classes = [IsAuthenticated, permissions.IsAdminUser]
+
+    def patch(self, request, pk):
+        try:
+            # Get the rental instance
+            rental = BikeRental.objects.get(id=pk)
+
+            print("requested data", self.request.data)
+            # Partial update with the provided data
+            serializer = self.serializer_class(
+                rental,
+                data=request.data,
+                partial=True,
+                context={'request': request}
+            )
+
+            if serializer.is_valid(raise_exception=True):
+                
+                serializer.save()
+                return Response(
+                    {
+                        "message": "Updated Successfully",
+                        "rental_data": serializer.data,
                     },
                     status=status.HTTP_200_OK
                 )

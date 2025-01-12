@@ -17,7 +17,7 @@ class BikeRentalSerializer(serializers.ModelSerializer):
             'pickup_date', 'dropoff_date', 'payment_status', 'rental_status','payment_method',
             'total_amount', 'created_at'
         ]
-        read_only_fields = ['user', 'payment_status', 'rental_status', 'total_amount']
+        read_only_fields = ['user', 'total_amount']
 
     def validate(self, data):
         try:
@@ -95,6 +95,7 @@ class BikeRentalSerializer(serializers.ModelSerializer):
         return rental
     
     def update(self, instance, validated_data):
+        print("validated_data", validated_data)
         # Update the rental instance with validated data
         # if 'payment_method' in validated_data:
         #     payment_method = validated_data.get('payment_method')
