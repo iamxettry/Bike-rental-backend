@@ -52,7 +52,9 @@ class CustomerSupportViewSet(ModelViewSet):
 class ReportIssueViewSet(ModelViewSet):
     queryset = ReportIssue.objects.all().order_by('-created_at')
     serializer_class = ReportIssueSerializer
-
+    filter_backends = [SearchFilter, DjangoFilterBackend]
+    search_fields = ['subject', 'description']  # Searchable fields
+    filterset_fields = ['category'] 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
@@ -61,6 +63,16 @@ class ReportIssueViewSet(ModelViewSet):
             "message": "Report issues retrieved successfully.",
             "data": serializer.data
         })
+    def get_queryset(self):
+        # Filter by status or return all by default
+        queryset = super().get_queryset()
+        search = self.request.query_params.get('search', None)
+        status = self.request.query_params.get('category', None)
+        if status in ['technical', 'billing' , 'feedback', 'other']:
+            queryset= queryset.filter(category=status)
+        if search:
+            queryset= queryset.filter(subject__icontains=search) | queryset.filter(description__icontains=search)
+        return queryset
 
 
 class SystemAlertViewSet(ModelViewSet):
