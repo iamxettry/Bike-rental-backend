@@ -4,7 +4,11 @@ from rest_framework import viewsets
 from .models import Blog
 from .serializers import BlogSerializer
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
-
+from rest_framework import generics
+from rest_framework.response import Response
+from rest_framework import status
+from apps.auth.models import User
+from apps.auth.serializers import UserSerializer
 class BlogViewSet(viewsets.ModelViewSet):
     queryset = Blog.objects.all()
     serializer_class = BlogSerializer
@@ -13,3 +17,12 @@ class BlogViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         # Automatically set the author to the currently authenticated user
         serializer.save(author=self.request.user)
+
+
+# get author details 
+class AutherRetrive(generics.RetrieveAPIView):
+    serializer_class = UserSerializer
+    def get(self, request, pk):
+        user = User.objects.get(id=pk)
+        serializer = self.get_serializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
