@@ -142,6 +142,7 @@ class EsewaPaymentViewSet(viewsets.ModelViewSet):
             print(f"eSewa verification response: {response.text}")
             if response.status_code == 200 and "Success" in response.text:
                 payment.status = 'SUCCESS'
+                payment.payment_via = 'esewa'
                 payment.save()
                 print("product id", payment.product_id.id)
                 # Update bike rental status if needed
