@@ -6,6 +6,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.exceptions import ValidationError
+from rest_framework import exceptions
 from apps.Bike.models import Bike
 from apps.common.models import Location
 from apps.Bike.serializers import BikeSerializer
@@ -122,11 +123,10 @@ class BikeRentUpdateView(APIView):
             
             # Check if user is authorized to update this rental
             if rental.user != request.user and not request.user.is_superuser:
-                return Response(
-                    {"error": "You are not authorized to update this rental"},
-                    status=status.HTTP_403_FORBIDDEN
-                )
-
+                raise exceptions.APIException("You are not authorized to update this rental")
+               
+            if rental.payment_status == 'paid':
+                raise exceptions.APIException("Payment has already been made for this rental")
             # Partial update with the provided data
             serializer = self.serializer_class(
                 rental,
