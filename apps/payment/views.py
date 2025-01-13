@@ -272,5 +272,11 @@ class PaymentListView(generics.ListAPIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     
-        
+# get payment history of user 
+class UserPaymentView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        payments = Payment.objects.filter(user=request.user)
+        serializer = PaymentSerializer(payments, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
         

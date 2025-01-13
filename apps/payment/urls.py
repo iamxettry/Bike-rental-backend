@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import InitiatePaymentView,VerifyPaymentView,EsewaRequestView,EsewaPaymentViewSet, PaymentStatsView, MonthlyPaymentStatsView, PaymentListView
+from .views import InitiatePaymentView,VerifyPaymentView,EsewaRequestView,EsewaPaymentViewSet, PaymentStatsView, MonthlyPaymentStatsView, PaymentListView,UserPaymentView
 router = DefaultRouter()
 router.register(r'esewa', EsewaPaymentViewSet, basename="esewa-payment")
 
@@ -17,5 +17,7 @@ urlpatterns = [
     path('quick-stats/', PaymentStatsView.as_view(), name='payment-stats-api'),
     path('monthly-payment-history/', MonthlyPaymentStatsView.as_view(), name='monthly-payment-history-api'),
      path('list/', PaymentListView.as_view(), name='payment-list-api'), 
+
+     path('my-payments/', UserPaymentView.as_view(), name="user-payments")
 
 ]

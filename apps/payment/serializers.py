@@ -260,8 +260,8 @@ class PaymentSerializer(serializers.ModelSerializer):
     product = BikeRentalSerializer(source='product_id', read_only=True)
     class Meta:
         model = Payment
-        fields = ['id', 'total_amount', 'payment_date', 'amount_paid', 'remaining_amount', 'product', 'transaction_id', 'status', 'created_at']
-        read_only_fields = ['status', 'transaction_id', 'created_at', 'remaining_amount']
+        fields = ['id', 'total_amount', 'payment_date', 'amount_paid', 'remaining_amount', 'product', 'transaction_id','payment_via','status', 'created_at']
+        read_only_fields = [ 'transaction_id', 'created_at', 'remaining_amount']
     
    
 
