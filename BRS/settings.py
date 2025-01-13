@@ -62,6 +62,7 @@ INSTALLED_APPS = [
     'apps.common',
     'apps.Bike',
     'apps.Bike_rent',
+    'apps.Support',
 
     # payment app
     'apps.payment',
@@ -103,7 +104,10 @@ REST_FRAMEWORK  ={
      ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
     "PAGE_SIZE": 10,
-     "DEFAULT_FILTER_BACKENDS": ("django_filters.rest_framework.DjangoFilterBackend",),
+     'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend',
+        'rest_framework.filters.SearchFilter',
+    ],
     # "EXCEPTION_HANDLER": "drf_standardized_errors.handler.exception_handler",
     'DEFAULT_RENDERER_CLASSES': (
         'rest_framework.renderers.JSONRenderer',
