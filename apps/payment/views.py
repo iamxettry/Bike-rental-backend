@@ -65,10 +65,12 @@ class EsewaPaymentViewSet(viewsets.ModelViewSet):
             bike_rental = BikeRental.objects.get(id=bike_rental_id)
             request.data['product_id'] = bike_rental.id
         except BikeRental.DoesNotExist:
-            return Response({
-                'error': 'Invalid bike rental ID'
-            }, status=status.HTTP_400_BAD_REQUEST)
+            raise exceptions.APIException('Invalid bike rental ID')
 
+
+            # check mayment status is paid
+        if bike_rental.payment_status == 'paid':
+            raise exceptions.APIException('Payment already made for this rental')
 
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
