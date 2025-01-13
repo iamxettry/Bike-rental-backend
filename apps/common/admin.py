@@ -5,7 +5,7 @@ from django.contrib import admin
 from .models import Location, UserActivity
 
 class AdminLocation(admin.ModelAdmin):
-    list_display = ['city']
+    list_display = ['id','city']
 
 class AdminUaserActivity(admin.ModelAdmin):
     list_display=['user','activity', 'timestamp']

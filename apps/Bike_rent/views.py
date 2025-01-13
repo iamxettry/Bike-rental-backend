@@ -269,3 +269,11 @@ class BikeRentalStatsView(APIView):
             "cancelled_rentals": cancelled_rentals,
             "overdue_rentals": overdue
         }, status=status.HTTP_200_OK)
+    
+# View to get active rentals of a user
+class UserRentalsView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        active_rentals = BikeRental.objects.filter(user=request.user)
+        serializer = BikeRentalSerializer(active_rentals, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)

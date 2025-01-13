@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 from apps.Bike.models import Bike
 from apps.auth.models import User
+from apps.common.models import Location
 import uuid
 
 # Create your models here.
@@ -31,8 +32,8 @@ class BikeRental(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(User, on_delete=models.PROTECT)
     bike = models.ForeignKey(Bike, on_delete=models.PROTECT)
-    pickup_location = models.CharField(max_length=255)
-    dropoff_location = models.CharField(max_length=255)
+    pickup_location = models.ForeignKey(Location, on_delete=models.PROTECT, related_name="pickup_rentals")
+    dropoff_location = models.ForeignKey(Location, on_delete=models.PROTECT, related_name="dropoff_rentals")
     pickup_date = models.DateTimeField()
     dropoff_date = models.DateTimeField()
     actual_dropoff_date = models.DateTimeField(null=True, blank=True)

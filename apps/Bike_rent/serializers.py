@@ -4,16 +4,19 @@ from django.utils import timezone
 from datetime import datetime
 from apps.Bike.serializers import BikeSerializer
 from apps.auth.serializers import UserSerializer
+from apps.common.serializers import LocationSerializer
 
 class BikeRentalSerializer(serializers.ModelSerializer):
     bike_details = BikeSerializer(source='bike', read_only=True)
     user_details = UserSerializer(source='user', read_only=True)
+    pickupLocation = serializers.CharField(source="pickup_location", read_only=True)
+    dropoffLocation = serializers.CharField(source="dropoff_location", read_only=True)
     pickup_date = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%S")
     dropoff_date = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%S")
     class Meta:
         model = BikeRental
         fields = [
-            'id', 'bike', 'user_details', 'bike_details', 'pickup_location', 'dropoff_location',
+            'id', 'bike', 'user_details', 'bike_details', 'pickupLocation', 'dropoffLocation',
             'pickup_date', 'dropoff_date', 'payment_status', 'rental_status','payment_method',
             'total_amount', 'created_at'
         ]
