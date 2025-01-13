@@ -63,6 +63,7 @@ INSTALLED_APPS = [
     'apps.Bike',
     'apps.Bike_rent',
     'apps.Support',
+    'apps.blog',
 
     # payment app
     'apps.payment',
