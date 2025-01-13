@@ -143,12 +143,15 @@ class EsewaPaymentViewSet(viewsets.ModelViewSet):
             if response.status_code == 200 and "Success" in response.text:
                 payment.status = 'SUCCESS'
                 payment.save()
-                
+                print("product id", payment.product_id.id)
                 # Update bike rental status if needed
                 try:
-                    bike_rental = BikeRental.objects.get(id=rental_id)
+                    bike_rental = BikeRental.objects.get(id=payment.product_id.id)
+                    print("bike rental",bike_rental)
                     bike_rental.payment_status = 'paid'  # Add appropriate status field
                     bike_rental.save()
+                    print("bike rental2",bike_rental)
+
                 except BikeRental.DoesNotExist:
                     print(f"BikeRental not found with ID: {rental_id}")
                     pass  # Handle as needed

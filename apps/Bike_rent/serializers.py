@@ -16,7 +16,7 @@ class BikeRentalSerializer(serializers.ModelSerializer):
     class Meta:
         model = BikeRental
         fields = [
-            'id', 'bike', 'user_details', 'bike_details', 'pickupLocation', 'dropoffLocation',
+            'id', 'bike', 'user_details', 'bike_details',"pickup_location","dropoff_location", 'pickupLocation', 'dropoffLocation',
             'pickup_date', 'dropoff_date', 'payment_status', 'rental_status','payment_method',
             'total_amount', 'created_at'
         ]
