@@ -1,7 +1,7 @@
 from django.db import models
 from django.utils.timezone import now
 from uuid import uuid4
-
+from tinymce.models import HTMLField
 # FAQ Model
 class FAQ(models.Model):
     STATUS_CHOICES = [
@@ -10,7 +10,7 @@ class FAQ(models.Model):
     ]
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     question = models.TextField()
-    answer = models.TextField()
+    answer = HTMLField()
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='draft')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -40,7 +40,7 @@ class ReportIssue(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
     subject = models.CharField(max_length=255)
-    description = models.TextField()
+    description = HTMLField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

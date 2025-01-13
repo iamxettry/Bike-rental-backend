@@ -56,7 +56,7 @@ INSTALLED_APPS = [
     'django_filters',
     'rest_framework_simplejwt.token_blacklist',
     'drf_spectacular',
-
+    'tinymce',
     # locals apps
     'apps.auth',
     'apps.common',
@@ -69,6 +69,17 @@ INSTALLED_APPS = [
     # 'khalti'
 ]
 
+CKEDITOR_5_CONFIGS = {
+    'default': {
+        'toolbar': [
+            'heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', '|',
+            'blockQuote', 'codeBlock', '|', 'undo', 'redo'
+        ],
+        'height': 300,
+        'width': 'auto',
+        'resize_enabled': True,
+    }
+}
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
