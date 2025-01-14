@@ -15,10 +15,18 @@ class BlogViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def perform_create(self, serializer):
+        print("User:", self.request.user, "Authenticated:", self.request.user.is_authenticated)
         # Automatically set the author to the currently authenticated user
         serializer.save(author=self.request.user)
 
-
+    def get_queryset(self):
+        # Filter by status or return all by default
+        queryset = super().get_queryset()
+        search = self.request.query_params.get('search', None)
+     
+        if search:
+            queryset= queryset.filter(title=search) | queryset.filter(description__icontains=search)
+        return queryset
 # get author details 
 class AutherRetrive(generics.RetrieveAPIView):
     serializer_class = UserSerializer
